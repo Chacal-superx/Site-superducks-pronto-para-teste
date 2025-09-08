@@ -395,6 +395,62 @@ const Dashboard = () => {
                           <Keyboard className="h-4 w-4 mr-1" />
                           Windows Key
                         </Button>
+                        <Button 
+                          onClick={resetHID}
+                          variant="outline"
+                          size="sm"
+                          className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                        >
+                          <Mouse className="h-4 w-4 mr-1" />
+                          Reset HID
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Resolution Suggestions */}
+                    <div>
+                      <h4 className="font-medium mb-3">Resolution Settings</h4>
+                      <div className="flex gap-2 flex-wrap">
+                        <Button 
+                          onClick={() => suggestResolution('1920x1080')}
+                          variant="outline"
+                          size="sm"
+                          className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                        >
+                          1920x1080
+                        </Button>
+                        <Button 
+                          onClick={() => suggestResolution('1366x768')}
+                          variant="outline"
+                          size="sm"
+                          className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                        >
+                          1366x768
+                        </Button>
+                        <Button 
+                          onClick={() => suggestResolution('1280x1024')}
+                          variant="outline"
+                          size="sm"
+                          className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                        >
+                          1280x1024
+                        </Button>
+                        <Button 
+                          onClick={() => suggestResolution('1024x768')}
+                          variant="outline"
+                          size="sm"
+                          className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                        >
+                          1024x768
+                        </Button>
+                        <Button 
+                          onClick={() => suggestResolution('auto')}
+                          variant="outline"
+                          size="sm"
+                          className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                        >
+                          Auto Detect
+                        </Button>
                       </div>
                     </div>
                   </div>
