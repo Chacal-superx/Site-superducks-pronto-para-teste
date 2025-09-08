@@ -139,12 +139,12 @@ async def create_device(device: DeviceCreate):
 
 @api_router.get("/devices", response_model=List[Device])
 async def get_devices():
-    devices = await db.devices.find().to_list(1000)
+    devices = await db.devices.find({}, {"_id": 0}).to_list(1000)
     return [Device(**device) for device in devices]
 
 @api_router.get("/devices/{device_id}", response_model=Device)
 async def get_device(device_id: str):
-    device = await db.devices.find_one({"id": device_id})
+    device = await db.devices.find_one({"id": device_id}, {"_id": 0})
     if not device:
         raise HTTPException(status_code=404, detail="Device not found")
     return Device(**device)
