@@ -348,7 +348,8 @@ class PiKVMAPITester:
             
             async def test_ws():
                 try:
-                    async with websockets.connect(ws_endpoint, timeout=10) as websocket:
+                    # Use ping_timeout instead of timeout parameter
+                    async with websockets.connect(ws_endpoint, ping_timeout=10) as websocket:
                         # Send heartbeat message
                         await websocket.send(json.dumps({"type": "heartbeat"}))
                         
