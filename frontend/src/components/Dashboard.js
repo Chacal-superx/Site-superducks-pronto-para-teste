@@ -133,13 +133,20 @@ const Dashboard = () => {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      'online': { variant: 'success', text: 'Online' },
-      'offline': { variant: 'destructive', text: 'Offline' },
-      'unknown': { variant: 'secondary', text: 'Unknown' }
+      'online': { variant: 'success', text: 'Online', className: 'bg-green-500 text-white hover:bg-green-600' },
+      'offline': { variant: 'destructive', text: 'Offline', className: 'bg-red-500 text-white hover:bg-red-600' },
+      'unknown': { variant: 'secondary', text: 'Unknown', className: 'bg-gray-500 text-white hover:bg-gray-600' }
     };
     
     const config = statusConfig[status] || statusConfig['unknown'];
-    return <Badge variant={config.variant}>{config.text}</Badge>;
+    return (
+      <Badge 
+        variant={config.variant}
+        className={config.className}
+      >
+        {config.text}
+      </Badge>
+    );
   };
 
   return (
