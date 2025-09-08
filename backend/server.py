@@ -357,13 +357,13 @@ async def health_check():
 @api_router.get("/logs/power")
 async def get_power_logs(limit: int = 100):
     """Get power action logs"""
-    logs = await db.power_logs.find().sort("timestamp", -1).limit(limit).to_list(limit)
+    logs = await db.power_logs.find({}, {"_id": 0}).sort("timestamp", -1).limit(limit).to_list(limit)
     return logs
 
 @api_router.get("/logs/input")
 async def get_input_logs(limit: int = 100):
     """Get input logs"""
-    logs = await db.input_logs.find().sort("timestamp", -1).limit(limit).to_list(limit)
+    logs = await db.input_logs.find({}, {"_id": 0}).sort("timestamp", -1).limit(limit).to_list(limit)
     return logs
 
 # Include the router in the main app
