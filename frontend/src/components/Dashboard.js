@@ -131,6 +131,41 @@ const Dashboard = () => {
     }
   };
 
+  const resetHID = async () => {
+    if (!selectedDevice) return;
+    
+    try {
+      // Send HID reset command
+      await axios.post(`${API}/input/keyboard`, {
+        device_id: selectedDevice.id,
+        keys: 'hid_reset',
+        modifiers: []
+      });
+      fetchLogs();
+      alert('HID Reset sent successfully');
+    } catch (error) {
+      console.error('Error sending HID reset:', error);
+      alert('Error sending HID reset');
+    }
+  };
+
+  const suggestResolution = (resolution) => {
+    if (!selectedDevice) return;
+    
+    const resolutions = {
+      '1920x1080': 'Set to 1920x1080 (Full HD)',
+      '1366x768': 'Set to 1366x768 (HD)',
+      '1280x1024': 'Set to 1280x1024 (SXGA)',
+      '1024x768': 'Set to 1024x768 (XGA)',
+      'auto': 'Auto-detect resolution'
+    };
+    
+    if (confirm(`${resolutions[resolution]}?\n\nThis will send the appropriate key combination to change resolution.`)) {
+      // Send resolution change command
+      sendKeyboardInput(`resolution_${resolution}`);
+    }
+  };
+
   const getStatusBadge = (status) => {
     const statusConfig = {
       'online': { variant: 'success', text: 'Online', className: 'bg-green-500 text-white hover:bg-green-600' },
