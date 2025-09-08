@@ -149,17 +149,20 @@ async def get_device(device_id: str):
         raise HTTPException(status_code=404, detail="Device not found")
     return Device(**device)
 
+class DeviceStatusUpdate(BaseModel):
+    status: DeviceStatus
+
 @api_router.put("/devices/{device_id}/status")
-async def update_device_status(device_id: str, status: DeviceStatus):
+async def update_device_status(device_id: str, status_update: DeviceStatusUpdate):
     """Update device status"""
     result = await db.devices.update_one(
         {"id": device_id}, 
-        {"$set": {"status": status, "last_seen": datetime.utcnow()}}
+        {"$set": {"status": status_update.status, "last_seen": datetime.utcnow()}}
     )
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Device not found")
     
-    return {"message": f"Device status updated to {status}"}
+    return {"message": f"Device status updated to {status_update.status}"}
 
 @api_router.delete("/devices/{device_id}")
 async def delete_device(device_id: str):
