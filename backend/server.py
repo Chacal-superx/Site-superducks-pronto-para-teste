@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, WebSocket, WebSocketDisconnect, HTTPException, UploadFile, File
+from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -6,9 +7,15 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime
+import json
+import asyncio
+import subprocess
+import psutil
+import aiofiles
+from enum import Enum
 
 
 ROOT_DIR = Path(__file__).parent
@@ -20,13 +27,46 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # Create the main app without a prefix
-app = FastAPI()
+app = FastAPI(title="PiKVM Enterprise Manager", version="1.0.0")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+# WebSocket connection manager
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
 
-# Define Models
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def send_personal_message(self, message: str, websocket: WebSocket):
+        await websocket.send_text(message)
+
+    async def broadcast(self, message: str):
+        for connection in self.active_connections:
+            await connection.send_text(message)
+
+manager = ConnectionManager()
+
+# Enums
+class PowerAction(str, Enum):
+    POWER_ON = "power_on"
+    POWER_OFF = "power_off"
+    RESTART = "restart"
+    RESET = "reset"
+    SLEEP = "sleep"
+
+class DeviceStatus(str, Enum):
+    ONLINE = "online"
+    OFFLINE = "offline"
+    UNKNOWN = "unknown"
+
+# Enhanced Models
 class StatusCheck(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     client_name: str
@@ -35,10 +75,48 @@ class StatusCheck(BaseModel):
 class StatusCheckCreate(BaseModel):
     client_name: str
 
-# Add your routes to the router instead of directly to app
+class Device(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    ip_address: str
+    status: DeviceStatus = DeviceStatus.UNKNOWN
+    last_seen: datetime = Field(default_factory=datetime.utcnow)
+    cpu_usage: Optional[float] = None
+    memory_usage: Optional[float] = None
+    temperature: Optional[float] = None
+    
+class DeviceCreate(BaseModel):
+    name: str
+    ip_address: str
+
+class PowerActionRequest(BaseModel):
+    device_id: str
+    action: PowerAction
+
+class KeyboardInput(BaseModel):
+    device_id: str
+    keys: str
+    modifiers: Optional[List[str]] = []
+
+class MouseInput(BaseModel):
+    device_id: str
+    x: int
+    y: int
+    button: Optional[str] = None
+    action: str  # click, move, scroll
+
+class SystemMetrics(BaseModel):
+    cpu_usage: float
+    memory_usage: float
+    disk_usage: float
+    temperature: Optional[float] = None
+    uptime: str
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+# Basic Routes
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "PiKVM Enterprise Manager API", "version": "1.0.0"}
 
 @api_router.post("/status", response_model=StatusCheck)
 async def create_status_check(input: StatusCheckCreate):
