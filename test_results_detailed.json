@@ -3,10 +3,10 @@
     "test": "Health Check",
     "success": true,
     "message": "API is healthy",
-    "timestamp": "2025-09-08T23:43:01.710004",
+    "timestamp": "2025-09-08T23:43:36.732836",
     "response_data": {
       "status": "healthy",
-      "timestamp": "2025-09-08T23:43:01.706223",
+      "timestamp": "2025-09-08T23:43:36.729005",
       "database": "connected",
       "services": "running"
     }
@@ -15,7 +15,7 @@
     "test": "Root Endpoint",
     "success": true,
     "message": "Root endpoint accessible",
-    "timestamp": "2025-09-08T23:43:01.759709",
+    "timestamp": "2025-09-08T23:43:36.741896",
     "response_data": {
       "message": "PiKVM Enterprise Manager API",
       "version": "1.0.0"
@@ -24,14 +24,14 @@
   {
     "test": "Create Device",
     "success": true,
-    "message": "Device created with ID: f01ac36a-d56a-4071-a2fb-b787066d70e4",
-    "timestamp": "2025-09-08T23:43:01.810758",
+    "message": "Device created with ID: c02d7538-01c6-4507-8fbb-cec752d22b01",
+    "timestamp": "2025-09-08T23:43:36.793897",
     "response_data": {
-      "id": "f01ac36a-d56a-4071-a2fb-b787066d70e4",
+      "id": "c02d7538-01c6-4507-8fbb-cec752d22b01",
       "name": "Production Server 01",
       "ip_address": "192.168.1.100",
       "status": "unknown",
-      "last_seen": "2025-09-08T23:43:01.765910",
+      "last_seen": "2025-09-08T23:43:36.748299",
       "cpu_usage": null,
       "memory_usage": null,
       "temperature": null
@@ -41,7 +41,7 @@
     "test": "List Devices",
     "success": true,
     "message": "Retrieved 2 devices",
-    "timestamp": "2025-09-08T23:43:01.822104",
+    "timestamp": "2025-09-08T23:43:36.808317",
     "response_data": {
       "count": 2
     }
@@ -50,13 +50,13 @@
     "test": "Get Device",
     "success": true,
     "message": "Device retrieved successfully",
-    "timestamp": "2025-09-08T23:43:01.833829",
+    "timestamp": "2025-09-08T23:43:36.823459",
     "response_data": {
-      "id": "f01ac36a-d56a-4071-a2fb-b787066d70e4",
+      "id": "c02d7538-01c6-4507-8fbb-cec752d22b01",
       "name": "Production Server 01",
       "ip_address": "192.168.1.100",
       "status": "unknown",
-      "last_seen": "2025-09-08T23:43:01.765000",
+      "last_seen": "2025-09-08T23:43:36.748000",
       "cpu_usage": null,
       "memory_usage": null,
       "temperature": null
@@ -66,80 +66,80 @@
     "test": "Power Action - power_on",
     "success": true,
     "message": "Action executed: Power action 'PowerAction.POWER_ON' executed successfully",
-    "timestamp": "2025-09-08T23:43:01.885585",
+    "timestamp": "2025-09-08T23:43:36.838777",
     "response_data": {
       "message": "Power action 'PowerAction.POWER_ON' executed successfully",
-      "log_id": "5fe1cf3c-c917-4ff2-aa4d-cefa2e9e04e2"
+      "log_id": "2cde784e-9acc-4e79-af33-052cd8536319"
     }
   },
   {
     "test": "Power Action - power_off",
     "success": true,
     "message": "Action executed: Power action 'PowerAction.POWER_OFF' executed successfully",
-    "timestamp": "2025-09-08T23:43:02.396598",
+    "timestamp": "2025-09-08T23:43:37.351299",
     "response_data": {
       "message": "Power action 'PowerAction.POWER_OFF' executed successfully",
-      "log_id": "ff024386-be64-4b9c-8d15-e40b84e8023f"
+      "log_id": "b8dee447-b83f-414d-9037-01b314096bfc"
     }
   },
   {
     "test": "Power Action - restart",
     "success": true,
     "message": "Action executed: Power action 'PowerAction.RESTART' executed successfully",
-    "timestamp": "2025-09-08T23:43:02.907801",
+    "timestamp": "2025-09-08T23:43:37.863083",
     "response_data": {
       "message": "Power action 'PowerAction.RESTART' executed successfully",
-      "log_id": "9737f421-f4bf-4032-9a5e-3629617a1e6d"
+      "log_id": "f7a59655-c023-4aa6-91c7-38311e9f6edf"
     }
   },
   {
     "test": "Power Action - reset",
     "success": true,
     "message": "Action executed: Power action 'PowerAction.RESET' executed successfully",
-    "timestamp": "2025-09-08T23:43:03.419287",
+    "timestamp": "2025-09-08T23:43:38.374198",
     "response_data": {
       "message": "Power action 'PowerAction.RESET' executed successfully",
-      "log_id": "7aa2c8fd-4c37-4484-bdc0-bac3d128d1eb"
+      "log_id": "5ba3c877-b65d-4384-87db-70380dc9a0eb"
     }
   },
   {
     "test": "Power Action - sleep",
     "success": true,
     "message": "Action executed: Power action 'PowerAction.SLEEP' executed successfully",
-    "timestamp": "2025-09-08T23:43:03.931164",
+    "timestamp": "2025-09-08T23:43:38.885770",
     "response_data": {
       "message": "Power action 'PowerAction.SLEEP' executed successfully",
-      "log_id": "d97f8eaa-4ded-45a0-b4f1-bbce84d87b54"
+      "log_id": "577d4585-fcd3-4714-941a-df66facbd7f0"
     }
   },
   {
     "test": "Keyboard Input",
     "success": true,
     "message": "Keyboard input sent: Keyboard input sent successfully",
-    "timestamp": "2025-09-08T23:43:04.442512",
+    "timestamp": "2025-09-08T23:43:39.396435",
     "response_data": {
       "message": "Keyboard input sent successfully",
-      "log_id": "c63cb7b4-6d9b-4e7c-94f3-6ca8013e6c67"
+      "log_id": "680ef913-a662-44aa-a7e4-1b4c3c7ad649"
     }
   },
   {
     "test": "Mouse Input",
     "success": true,
     "message": "Mouse input sent: Mouse input sent successfully",
-    "timestamp": "2025-09-08T23:43:04.451850",
+    "timestamp": "2025-09-08T23:43:39.405422",
     "response_data": {
       "message": "Mouse input sent successfully",
-      "log_id": "aedd9da4-d2f8-4de4-b86c-0452fe9ce80c"
+      "log_id": "08290a1f-5a80-4520-959b-e92da8eaee51"
     }
   },
   {
     "test": "System Metrics",
     "success": true,
     "message": "All metrics retrieved successfully",
-    "timestamp": "2025-09-08T23:43:05.469325",
+    "timestamp": "2025-09-08T23:43:40.462425",
     "response_data": {
-      "cpu": "7.0%",
-      "memory": "28.3%",
+      "cpu": "1.8%",
+      "memory": "27.9%",
       "disk": "10.0%"
     }
   },
@@ -147,7 +147,7 @@
     "test": "File Upload List",
     "success": true,
     "message": "File list retrieved: 0 files",
-    "timestamp": "2025-09-08T23:43:05.479125",
+    "timestamp": "2025-09-08T23:43:40.473218",
     "response_data": {
       "count": 0
     }
@@ -155,53 +155,53 @@
   {
     "test": "Power Logs",
     "success": true,
-    "message": "Power logs retrieved: 7 entries",
-    "timestamp": "2025-09-08T23:43:05.488650",
+    "message": "Power logs retrieved: 12 entries",
+    "timestamp": "2025-09-08T23:43:40.485595",
     "response_data": {
-      "count": 7
+      "count": 12
     }
   },
   {
     "test": "Input Logs",
     "success": true,
-    "message": "Input logs retrieved: 3 entries",
-    "timestamp": "2025-09-08T23:43:05.496962",
+    "message": "Input logs retrieved: 5 entries",
+    "timestamp": "2025-09-08T23:43:40.497122",
     "response_data": {
-      "count": 3
+      "count": 5
     }
   },
   {
     "test": "Create Status Check",
     "success": true,
     "message": "Status check created successfully",
-    "timestamp": "2025-09-08T23:43:05.511813",
+    "timestamp": "2025-09-08T23:43:40.548396",
     "response_data": {
-      "id": "451ad0a3-63f1-4969-a1a4-01602570d3b1",
+      "id": "88f4a4d7-f254-4632-8c80-26cb60f95dd6",
       "client_name": "Enterprise Dashboard",
-      "timestamp": "2025-09-08T23:43:05.503056"
+      "timestamp": "2025-09-08T23:43:40.502745"
     }
   },
   {
     "test": "Get Status Checks",
     "success": true,
-    "message": "Status checks retrieved: 2 entries",
-    "timestamp": "2025-09-08T23:43:05.561941",
+    "message": "Status checks retrieved: 3 entries",
+    "timestamp": "2025-09-08T23:43:40.558115",
     "response_data": {
-      "count": 2
+      "count": 3
     }
   },
   {
     "test": "WebSocket Connection",
-    "success": false,
-    "message": "WebSocket error: BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'",
-    "timestamp": "2025-09-08T23:43:05.581152",
+    "success": true,
+    "message": "WebSocket heartbeat successful",
+    "timestamp": "2025-09-08T23:43:40.630782",
     "response_data": null
   },
   {
     "test": "Cleanup Test Device",
     "success": true,
     "message": "Test device deleted successfully",
-    "timestamp": "2025-09-08T23:43:05.591119",
+    "timestamp": "2025-09-08T23:43:40.640419",
     "response_data": null
   }
 ]
