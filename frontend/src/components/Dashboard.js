@@ -139,6 +139,8 @@ const Dashboard = () => {
       updateDeviceStatus(device.id, newStatus);
     }
   };
+
+  const sendKeyboardInput = async (keys) => {
     if (!selectedDevice) return;
     
     try {
