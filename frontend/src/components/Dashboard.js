@@ -116,7 +116,29 @@ const Dashboard = () => {
     }
   };
 
-  const sendKeyboardInput = async (keys) => {
+  const updateDeviceStatus = async (deviceId, status) => {
+    try {
+      // In a real implementation, this would ping the device or check PiKVM status
+      // For demo purposes, we'll update the device status locally
+      setDevices(prevDevices => 
+        prevDevices.map(device => 
+          device.id === deviceId 
+            ? { ...device, status: status, last_seen: new Date().toISOString() }
+            : device
+        )
+      );
+    } catch (error) {
+      console.error('Error updating device status:', error);
+    }
+  };
+
+  const simulateDeviceStatusChange = () => {
+    if (devices.length > 0) {
+      const device = devices[0];
+      const newStatus = device.status === 'online' ? 'offline' : 'online';
+      updateDeviceStatus(device.id, newStatus);
+    }
+  };
     if (!selectedDevice) return;
     
     try {
