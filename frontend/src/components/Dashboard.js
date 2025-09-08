@@ -243,94 +243,138 @@ const Dashboard = () => {
           {/* Control Panel */}
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>Control Panel</CardTitle>
-              {selectedDevice && (
+              <div className="flex items-center justify-between">
+                <CardTitle>Control Panel</CardTitle>
+                <div className="flex space-x-1">
+                  <Button
+                    variant={activeTab === 'control' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveTab('control')}
+                  >
+                    <Monitor className="h-4 w-4 mr-1" />
+                    Control
+                  </Button>
+                  <Button
+                    variant={activeTab === 'files' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveTab('files')}
+                  >
+                    <FileText className="h-4 w-4 mr-1" />
+                    Files
+                  </Button>
+                  <Button
+                    variant={activeTab === 'settings' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveTab('settings')}
+                  >
+                    <Settings className="h-4 w-4 mr-1" />
+                    Settings
+                  </Button>
+                </div>
+              </div>
+              {selectedDevice && activeTab === 'control' && (
                 <p className="text-sm text-gray-600">
                   Controlling: {selectedDevice.name} ({selectedDevice.ip_address})
                 </p>
               )}
             </CardHeader>
             <CardContent>
-              {selectedDevice ? (
+              {activeTab === 'control' && (
+                selectedDevice ? (
+                  <div className="space-y-6">
+                    {/* Video Stream Placeholder */}
+                    <div className="bg-black rounded-lg aspect-video flex items-center justify-center">
+                      <div className="text-white text-center">
+                        <Monitor className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm opacity-75">Video Stream</p>
+                        <p className="text-xs opacity-50">Connected to {selectedDevice.name}</p>
+                      </div>
+                    </div>
+
+                    {/* Power Controls */}
+                    <div>
+                      <h4 className="font-medium mb-3">Power Management</h4>
+                      <div className="flex gap-2 flex-wrap">
+                        <Button 
+                          onClick={() => executePowerAction('power_on')}
+                          variant="outline"
+                          size="sm"
+                          className="text-green-600 border-green-200 hover:bg-green-50"
+                        >
+                          <Play className="h-4 w-4 mr-1" />
+                          Power On
+                        </Button>
+                        <Button 
+                          onClick={() => executePowerAction('power_off')}
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 border-red-200 hover:bg-red-50"
+                        >
+                          <Square className="h-4 w-4 mr-1" />
+                          Power Off
+                        </Button>
+                        <Button 
+                          onClick={() => executePowerAction('restart')}
+                          variant="outline"
+                          size="sm"
+                          className="text-orange-600 border-orange-200 hover:bg-orange-50"
+                        >
+                          <RotateCcw className="h-4 w-4 mr-1" />
+                          Restart
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div>
+                      <h4 className="font-medium mb-3">Quick Actions</h4>
+                      <div className="flex gap-2 flex-wrap">
+                        <Button 
+                          onClick={() => sendKeyboardInput('ctrl+alt+del')}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <Keyboard className="h-4 w-4 mr-1" />
+                          Ctrl+Alt+Del
+                        </Button>
+                        <Button 
+                          onClick={() => sendKeyboardInput('alt+tab')}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <Keyboard className="h-4 w-4 mr-1" />
+                          Alt+Tab
+                        </Button>
+                        <Button 
+                          onClick={() => sendKeyboardInput('win')}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <Keyboard className="h-4 w-4 mr-1" />
+                          Windows Key
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Server className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <p className="text-gray-600">Select a device to start controlling</p>
+                  </div>
+                )
+              )}
+
+              {activeTab === 'files' && (
+                <FileUpload />
+              )}
+
+              {activeTab === 'settings' && (
                 <div className="space-y-6">
-                  {/* Video Stream Placeholder */}
-                  <div className="bg-black rounded-lg aspect-video flex items-center justify-center">
-                    <div className="text-white text-center">
-                      <Monitor className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm opacity-75">Video Stream</p>
-                      <p className="text-xs opacity-50">Connected to {selectedDevice.name}</p>
-                    </div>
+                  <div className="text-center py-8">
+                    <Settings className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <p className="text-gray-600">Device settings and configuration</p>
+                    <p className="text-sm text-gray-500 mt-2">Coming soon...</p>
                   </div>
-
-                  {/* Power Controls */}
-                  <div>
-                    <h4 className="font-medium mb-3">Power Management</h4>
-                    <div className="flex gap-2 flex-wrap">
-                      <Button 
-                        onClick={() => executePowerAction('power_on')}
-                        variant="outline"
-                        size="sm"
-                        className="text-green-600 border-green-200 hover:bg-green-50"
-                      >
-                        <Play className="h-4 w-4 mr-1" />
-                        Power On
-                      </Button>
-                      <Button 
-                        onClick={() => executePowerAction('power_off')}
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 border-red-200 hover:bg-red-50"
-                      >
-                        <Square className="h-4 w-4 mr-1" />
-                        Power Off
-                      </Button>
-                      <Button 
-                        onClick={() => executePowerAction('restart')}
-                        variant="outline"
-                        size="sm"
-                        className="text-orange-600 border-orange-200 hover:bg-orange-50"
-                      >
-                        <RotateCcw className="h-4 w-4 mr-1" />
-                        Restart
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Quick Actions */}
-                  <div>
-                    <h4 className="font-medium mb-3">Quick Actions</h4>
-                    <div className="flex gap-2 flex-wrap">
-                      <Button 
-                        onClick={() => sendKeyboardInput('ctrl+alt+del')}
-                        variant="outline"
-                        size="sm"
-                      >
-                        <Keyboard className="h-4 w-4 mr-1" />
-                        Ctrl+Alt+Del
-                      </Button>
-                      <Button 
-                        onClick={() => sendKeyboardInput('alt+tab')}
-                        variant="outline"
-                        size="sm"
-                      >
-                        <Keyboard className="h-4 w-4 mr-1" />
-                        Alt+Tab
-                      </Button>
-                      <Button 
-                        onClick={() => sendKeyboardInput('win')}
-                        variant="outline"
-                        size="sm"
-                      >
-                        <Keyboard className="h-4 w-4 mr-1" />
-                        Windows Key
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Server className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                  <p className="text-gray-600">Select a device to start controlling</p>
                 </div>
               )}
             </CardContent>
