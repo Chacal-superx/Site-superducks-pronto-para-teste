@@ -304,7 +304,7 @@ async def upload_iso_file(file: UploadFile = File(...)):
 @api_router.get("/upload/files")
 async def list_uploaded_files():
     """List all uploaded files"""
-    files = await db.file_uploads.find().to_list(1000)
+    files = await db.file_uploads.find({}, {"_id": 0}).to_list(1000)
     return files
 
 # WebSocket for real-time communication
