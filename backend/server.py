@@ -125,7 +125,150 @@ class SystemMetrics(BaseModel):
 # Basic Routes
 @api_router.get("/")
 async def root():
-    return {"message": "PiKVM Enterprise Manager API", "version": "1.0.0"}
+    return {"message": "PiKVM Enterprise Manager API", "version": "2.0.0", "enterprise": True}
+
+# Authentication Routes  
+@api_router.post("/auth/login", response_model=Token)
+async def login(user_credentials: UserLogin, request: Request):
+    """Login user and return JWT token"""
+    user = await authenticate_user(user_credentials.username, user_credentials.password)
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password"
+        )
+    
+    # Update last login
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"last_login": datetime.utcnow()}}
+    )
+    
+    # Create access token
+    access_token_expires = timedelta(minutes=int(os.getenv("JWT_EXPIRE_HOURS", "24")) * 60)
+    access_token = create_access_token(
+        data={"sub": user["username"]}, expires_delta=access_token_expires
+    )
+    
+    # Log login
+    await log_user_action(
+        user_id=user["id"],
+        action="login",
+        details={"method": "password"},
+        ip_address=request.client.host if request.client else "unknown"
+    )
+    
+    user_obj = User(**{k: v for k, v in user.items() if k != "password_hash"})
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": user_obj
+    }
+
+@api_router.post("/auth/register", response_model=User)
+async def register(user_data: UserCreate, current_user: dict = Depends(require_role(UserRole.ADMIN))):
+    """Register new user (Admin only)"""
+    # Check if username already exists
+    existing_user = await db.users.find_one({"username": user_data.username})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username already registered")
+    
+    # Check if email already exists
+    existing_email = await db.users.find_one({"email": user_data.email})
+    if existing_email:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Create new user
+    hashed_password = get_password_hash(user_data.password)
+    user_dict = {
+        "id": str(uuid.uuid4()),
+        "username": user_data.username,
+        "email": user_data.email,
+        "password_hash": hashed_password,
+        "role": user_data.role,
+        "active": True,
+        "created_at": datetime.utcnow(),
+        "last_login": None
+    }
+    
+    await db.users.insert_one(user_dict)
+    
+    # Log user creation
+    await log_user_action(
+        user_id=current_user["id"],
+        action="create_user",
+        details={"new_user_id": user_dict["id"], "username": user_data.username, "role": user_data.role}
+    )
+    
+    return User(**{k: v for k, v in user_dict.items() if k != "password_hash"})
+
+@api_router.get("/auth/me", response_model=User)
+async def get_current_user_info(current_user: dict = Depends(get_current_active_user)):
+    """Get current user information"""
+    return User(**{k: v for k, v in current_user.items() if k != "password_hash"})
+
+# User Management Routes
+@api_router.get("/users", response_model=List[User])
+async def get_users(current_user: dict = Depends(require_role(UserRole.ADMIN))):
+    """Get all users (Admin only)"""
+    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(1000)
+    return [User(**user) for user in users]
+
+@api_router.put("/users/{user_id}/permissions")
+async def set_user_device_permissions(
+    user_id: str,
+    device_permissions: Dict[str, PermissionLevel],
+    current_user: dict = Depends(require_role(UserRole.ADMIN))
+):
+    """Set user permissions for devices"""
+    # Verify user exists
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Remove existing permissions
+    await db.user_device_permissions.delete_many({"user_id": user_id})
+    
+    # Add new permissions
+    permissions = []
+    for device_id, permission_level in device_permissions.items():
+        permission_dict = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "device_id": device_id,
+            "permission_level": permission_level,
+            "granted_by": current_user["id"],
+            "granted_at": datetime.utcnow()
+        }
+        permissions.append(permission_dict)
+    
+    if permissions:
+        await db.user_device_permissions.insert_many(permissions)
+    
+    # Log permission change
+    await log_user_action(
+        user_id=current_user["id"],
+        action="update_user_permissions",
+        details={"target_user_id": user_id, "permissions": device_permissions}
+    )
+    
+    return {"message": "Permissions updated successfully"}
+
+@api_router.get("/users/{user_id}/permissions")
+async def get_user_permissions(
+    user_id: str,
+    current_user: dict = Depends(require_role(UserRole.ADMIN))
+):
+    """Get user device permissions"""
+    permissions = await db.user_device_permissions.find(
+        {"user_id": user_id}, {"_id": 0}
+    ).to_list(1000)
+    
+    return {
+        "user_id": user_id,
+        "permissions": {perm["device_id"]: perm["permission_level"] for perm in permissions}
+    }
 
 @api_router.post("/status", response_model=StatusCheck)
 async def create_status_check(input: StatusCheckCreate):
