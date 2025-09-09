@@ -151,7 +151,7 @@ Visualizador:
 
 ### **PARA VOCÊ (ADMINISTRADOR):**
 
-1. **Acesse**: https://pikvm-manager.preview.emergentagent.com
+1. **Acesse**: https://progress-track-4.preview.emergentagent.com
 2. **Login**: admin / admin123
 3. **Adicione seu PiKVM**: 
    - Nome: PiKVM-Teste6
@@ -163,7 +163,7 @@ Visualizador:
 
 ### **PARA SEUS USUÁRIOS:**
 
-1. **Acesse**: https://pikvm-manager.preview.emergentagent.com
+1. **Acesse**: https://progress-track-4.preview.emergentagent.com
 2. **Login** com credenciais fornecidas por você
 3. **Selecione dispositivo** da lista (apenas os permitidos)
 4. **Controle remoto** com interface simplificada
@@ -211,12 +211,12 @@ Visualizador:
 
 ```bash
 # 1. Login no sistema
-curl -X POST https://pikvm-manager.preview.emergentagent.com/api/auth/login \
+curl -X POST https://progress-track-4.preview.emergentagent.com/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username": "admin", "password": "admin123"}'
 
 # 2. Adicionar seu PiKVM (use token do passo 1)
-curl -X POST https://pikvm-manager.preview.emergentagent.com/api/devices \
+curl -X POST https://progress-track-4.preview.emergentagent.com/api/devices \
   -H "Authorization: Bearer {SEU_TOKEN}" \
   -H "Content-Type: application/json" \
   -d '{
@@ -229,7 +229,7 @@ curl -X POST https://pikvm-manager.preview.emergentagent.com/api/devices \
   }'
 
 # 3. Criar usuário da equipe
-curl -X POST https://pikvm-manager.preview.emergentagent.com/api/auth/register \
+curl -X POST https://progress-track-4.preview.emergentagent.com/api/auth/register \
   -H "Authorization: Bearer {SEU_TOKEN}" \
   -H "Content-Type: application/json" \
   -d '{
@@ -270,7 +270,7 @@ curl -X POST https://pikvm-manager.preview.emergentagent.com/api/auth/register \
 
 ## 🚀 **A SOLUÇÃO ESTÁ 100% PRONTA!**
 
-**URL para usar imediatamente:** https://pikvm-manager.preview.emergentagent.com
+**URL para usar imediatamente:** https://progress-track-4.preview.emergentagent.com
 
 **Teste com:**
 - **Admin**: admin / admin123 (interface completa)
