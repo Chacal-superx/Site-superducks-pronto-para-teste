@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, WebSocket, WebSocketDisconnect, HTTPException, UploadFile, File
+from fastapi import FastAPI, APIRouter, WebSocket, WebSocketDisconnect, HTTPException, UploadFile, File, Depends, Request
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -9,13 +9,22 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import asyncio
 import subprocess
 import psutil
 import aiofiles
 from enum import Enum
+
+# Import authentication and PiKVM integration
+from auth import (
+    User, UserCreate, UserLogin, Token, UserRole, PermissionLevel,
+    authenticate_user, create_access_token, get_current_active_user,
+    get_password_hash, has_permission, get_user_accessible_devices,
+    log_user_action, require_role, AuditLogEntry
+)
+from pikvm_integration import pikvm_manager
 
 
 ROOT_DIR = Path(__file__).parent
