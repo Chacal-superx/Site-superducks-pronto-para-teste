@@ -228,8 +228,8 @@ const Dashboard = ({ user, token, onLogout }) => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">PiKVM Enterprise Manager</h1>
-          <p className="text-gray-600">Remote device management and control center</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Super Ducks Enterprise Manager</h1>
+          <p className="text-gray-600">Central de gestão e controle remoto</p>
         </div>
 
         {/* Top Stats Cards */}
