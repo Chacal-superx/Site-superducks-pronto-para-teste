@@ -1,5 +1,5 @@
 """
-PiKVM Integration Layer - Handles communication with actual PiKVM devices
+Super Ducks Integration Layer - Handles communication with actual Super Ducks devices
 """
 import aiohttp
 import asyncio
