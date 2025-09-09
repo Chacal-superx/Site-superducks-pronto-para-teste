@@ -191,9 +191,15 @@ const UserDashboard = ({ user, token, onLogout }) => {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Monitor className="h-8 w-8 text-blue-600" />
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                <img 
+                  src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0xNSAyNUwxNSAxNUwyNSAxNUwyNSAyNUwxNSAyNVoiIGZpbGw9IiMxRjJBNDciLz4KPC9zdmc+Cg=="
+                  alt="SuperDucks" 
+                  className="h-5 w-5"
+                />
+              </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">PiKVM Manager</h1>
+                <h1 className="text-xl font-bold text-gray-900">Super Ducks Manager</h1>
                 <p className="text-sm text-gray-500">Acesso Remoto</p>
               </div>
             </div>
