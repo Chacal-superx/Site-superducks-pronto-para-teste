@@ -171,7 +171,7 @@ show_info() {
 # Main execution
 main() {
     echo ""
-    print_status "Iniciando deployment do PiKVM Enterprise Manager..."
+    print_status "Iniciando deployment do Super Ducks Enterprise Manager..."
     echo ""
     
     check_docker
