@@ -24,7 +24,7 @@ from auth import (
     get_password_hash, has_permission, get_user_accessible_devices,
     log_user_action, require_role, AuditLogEntry
 )
-from pikvm_integration import pikvm_manager
+from pikvm_integration import superducks_manager
 
 
 ROOT_DIR = Path(__file__).parent
@@ -318,7 +318,7 @@ async def create_device(
     await db.devices.insert_one(device_dict)
     
     # Register with PiKVM Manager
-    await pikvm_manager.register_device(
+    await superducks_manager.register_device(
         device_obj.id, 
         device.ip_address,
         device.pikvm_username,
@@ -387,8 +387,8 @@ async def delete_device(device_id: str, current_user: dict = Depends(require_rol
         raise HTTPException(status_code=404, detail="Device not found")
     
     # Remove from PiKVM manager
-    if device_id in pikvm_manager.devices:
-        del pikvm_manager.devices[device_id]
+    if device_id in superducks_manager.devices:
+        del superducks_manager.devices[device_id]
     
     # Remove all user permissions for this device
     await db.user_device_permissions.delete_many({"device_id": device_id})
@@ -420,7 +420,7 @@ async def execute_power_action(
         raise HTTPException(status_code=404, detail="Device not found")
     
     # Execute power action via PiKVM Manager
-    success = await pikvm_manager.execute_power_action(request.device_id, request.action)
+    success = await superducks_manager.execute_power_action(request.device_id, request.action)
     
     if not success:
         raise HTTPException(status_code=500, detail="Failed to execute power action")
@@ -469,7 +469,7 @@ async def send_keyboard_input(
         raise HTTPException(status_code=403, detail="Insufficient permissions for input control")
     
     # Execute keyboard input via PiKVM Manager
-    success = await pikvm_manager.send_keyboard_input(
+    success = await superducks_manager.send_keyboard_input(
         input_data.device_id, 
         input_data.keys, 
         input_data.modifiers or []
@@ -522,7 +522,7 @@ async def send_mouse_input(
         raise HTTPException(status_code=403, detail="Insufficient permissions for input control")
     
     # Execute mouse input via PiKVM Manager
-    success = await pikvm_manager.send_mouse_input(
+    success = await superducks_manager.send_mouse_input(
         input_data.device_id,
         input_data.x,
         input_data.y,
@@ -700,7 +700,7 @@ async def get_video_stream(
         raise HTTPException(status_code=403, detail="Insufficient permissions to view device")
     
     # Get stream URL from PiKVM Manager
-    stream_url = await pikvm_manager.get_stream_url(device_id)
+    stream_url = await superducks_manager.get_stream_url(device_id)
     
     if not stream_url:
         raise HTTPException(status_code=404, detail="Device not found or stream unavailable")
