@@ -125,7 +125,7 @@ class SystemMetrics(BaseModel):
 # Basic Routes
 @api_router.get("/")
 async def root():
-    return {"message": "PiKVM Enterprise Manager API", "version": "2.0.0", "enterprise": True}
+    return {"message": "Super Ducks Enterprise Manager API", "version": "2.0.0", "enterprise": True}
 
 # Authentication Routes  
 @api_router.post("/auth/login", response_model=Token)
