@@ -292,7 +292,7 @@ const LoginPage = ({ onLogin }) => {
 
             {/* Footer */}
             <div className="mt-6 text-center text-sm text-gray-500">
-              <p>© 2025 PiKVM Manager - Acesso Remoto Profissional</p>
+              <p>© 2025 Super Ducks Manager - Acesso Remoto Profissional</p>
               <p className="mt-1">Desenvolvido por SuperDucks</p>
             </div>
           </CardContent>
