@@ -179,7 +179,7 @@ const Dashboard = ({ user, token, onLogout }) => {
         device_id: selectedDevice.id,
         keys: 'hid_reset',
         modifiers: []
-      });
+      }, authHeaders);
       fetchLogs();
       alert('HID Reset sent successfully');
     } catch (error) {
