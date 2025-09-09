@@ -163,7 +163,7 @@ const Dashboard = ({ user, token, onLogout }) => {
         device_id: selectedDevice.id,
         keys: keys,
         modifiers: []
-      });
+      }, authHeaders);
       fetchLogs();
     } catch (error) {
       console.error('Error sending keyboard input:', error);
