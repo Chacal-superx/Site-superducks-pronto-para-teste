@@ -282,31 +282,94 @@ async def get_status_checks():
     status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
     return [StatusCheck(**status_check) for status_check in status_checks]
 
-# Device Management Routes
-@api_router.post("/devices", response_model=Device)
-async def create_device(device: DeviceCreate):
-    device_obj = Device(**device.dict())
-    await db.devices.insert_one(device_obj.dict())
-    return device_obj
-
-@api_router.get("/devices", response_model=List[Device])
-async def get_devices():
-    devices = await db.devices.find({}, {"_id": 0}).to_list(1000)
-    return [Device(**device) for device in devices]
-
-@api_router.get("/devices/{device_id}", response_model=Device)
-async def get_device(device_id: str):
-    device = await db.devices.find_one({"id": device_id}, {"_id": 0})
-    if not device:
-        raise HTTPException(status_code=404, detail="Device not found")
-    return Device(**device)
+# Enhanced Device Management with PiKVM Integration
+class DeviceCreateEnterprise(BaseModel):
+    name: str
+    ip_address: str
+    location: Optional[str] = None
+    description: Optional[str] = None
+    pikvm_username: str = "admin"
+    pikvm_password: str = "admin"
 
 class DeviceStatusUpdate(BaseModel):
     status: DeviceStatus
 
+@api_router.post("/devices", response_model=Device)
+async def create_device(
+    device: DeviceCreateEnterprise, 
+    current_user: dict = Depends(require_role(UserRole.ADMIN))
+):
+    """Create new device (Admin only)"""
+    device_obj = Device(
+        name=device.name,
+        ip_address=device.ip_address,
+        status=DeviceStatus.UNKNOWN
+    )
+    
+    # Save to database
+    device_dict = device_obj.dict()
+    device_dict.update({
+        "location": device.location,
+        "description": device.description,
+        "created_by": current_user["id"],
+        "created_at": datetime.utcnow()
+    })
+    
+    await db.devices.insert_one(device_dict)
+    
+    # Register with PiKVM Manager
+    await pikvm_manager.register_device(
+        device_obj.id, 
+        device.ip_address,
+        device.pikvm_username,
+        device.pikvm_password
+    )
+    
+    # Log device creation
+    await log_user_action(
+        user_id=current_user["id"],
+        action="create_device",
+        device_id=device_obj.id,
+        details={"name": device.name, "ip": device.ip_address}
+    )
+    
+    return device_obj
+
+@api_router.get("/devices", response_model=List[Device])
+async def get_devices(current_user: dict = Depends(get_current_active_user)):
+    """Get devices accessible to current user"""
+    accessible_device_ids = await get_user_accessible_devices(current_user)
+    
+    if not accessible_device_ids:
+        return []
+    
+    devices = await db.devices.find(
+        {"id": {"$in": accessible_device_ids}}, 
+        {"_id": 0}
+    ).to_list(1000)
+    
+    return [Device(**device) for device in devices]
+
+@api_router.get("/devices/{device_id}", response_model=Device)
+async def get_device(device_id: str, current_user: dict = Depends(get_current_active_user)):
+    """Get specific device if user has access"""
+    # Check permissions
+    if not await has_permission(current_user, device_id, PermissionLevel.VIEW_ONLY):
+        raise HTTPException(status_code=403, detail="Access denied to this device")
+    
+    device = await db.devices.find_one({"id": device_id}, {"_id": 0})
+    if not device:
+        raise HTTPException(status_code=404, detail="Device not found")
+    
+    return Device(**device)
+
 @api_router.put("/devices/{device_id}/status")
-async def update_device_status(device_id: str, status_update: DeviceStatusUpdate):
-    """Update device status"""
+async def update_device_status(
+    device_id: str, 
+    status_update: DeviceStatusUpdate,
+    current_user: dict = Depends(require_role(UserRole.ADMIN))
+):
+    """Update device status (Admin only)"""
     result = await db.devices.update_one(
         {"id": device_id}, 
         {"$set": {"status": status_update.status, "last_seen": datetime.utcnow()}}
@@ -317,10 +380,26 @@ async def update_device_status(device_id: str, status_update: DeviceStatusUpdate
     return {"message": f"Device status updated to {status_update.status}"}
 
 @api_router.delete("/devices/{device_id}")
-async def delete_device(device_id: str):
+async def delete_device(device_id: str, current_user: dict = Depends(require_role(UserRole.ADMIN))):
+    """Delete device (Admin only)"""
     result = await db.devices.delete_one({"id": device_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Device not found")
+    
+    # Remove from PiKVM manager
+    if device_id in pikvm_manager.devices:
+        del pikvm_manager.devices[device_id]
+    
+    # Remove all user permissions for this device
+    await db.user_device_permissions.delete_many({"device_id": device_id})
+    
+    # Log device deletion
+    await log_user_action(
+        user_id=current_user["id"],
+        action="delete_device",
+        device_id=device_id
+    )
+    
     return {"message": "Device deleted successfully"}
 
 # Power Management Routes
