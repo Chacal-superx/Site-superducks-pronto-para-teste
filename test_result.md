@@ -327,6 +327,9 @@ frontend:
       - working: true
         agent: "main"
         comment: "Created real-time activity log showing power actions and input events with timestamps"
+      - working: true
+        agent: "testing"
+        comment: "TESTED SUCCESSFULLY: Activity log interface working perfectly. Recent Activity section displays correctly with 10+ activity entries showing power actions (power_on, power_off, restart) and input events (hid_reset, ctrl+alt+del, alt+tab, win) with proper timestamps and device IDs. All actions from testing session are properly logged and displayed with appropriate icons (power and activity icons)."
 
   - task: "File Upload Component"
     implemented: true
