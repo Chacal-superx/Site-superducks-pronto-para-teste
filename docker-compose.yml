@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: pikvm_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: pikvm_admin_2025
+      MONGO_INITDB_DATABASE: pikvm_enterprise
+    networks:
+      - pikvm_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pikvm_backend
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    depends_on:
+      - mongodb
+    environment:
+      MONGO_URL: mongodb://admin:pikvm_admin_2025@mongodb:27017/pikvm_enterprise?authSource=admin
+      DB_NAME: pikvm_enterprise
+      JWT_SECRET: super_secret_jwt_key_change_in_production_2025
+      JWT_EXPIRE_HOURS: 24
+      ENVIRONMENT: production
+      LOG_LEVEL: INFO
+      CORS_ORIGINS: "*"
+    volumes:
+      - ./uploads:/tmp/uploads
+    networks:
+      - pikvm_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pikvm_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      REACT_APP_BACKEND_URL: http://localhost:8001
+      NODE_ENV: production
+    networks:
+      - pikvm_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: pikvm_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - pikvm_network
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  pikvm_network:
+    driver: bridge
