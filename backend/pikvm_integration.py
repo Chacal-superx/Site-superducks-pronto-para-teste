@@ -160,12 +160,12 @@ class SuperDucksDevice:
         if self.session:
             await self.session.close()
 
-class PiKVMManager:
+class SuperDucksManager:
     def __init__(self):
         self.devices: Dict[str, SuperDucksDevice] = {}
     
     async def register_device(self, device_id: str, ip_address: str, username: str = "admin", password: str = "admin"):
-        """Register a new PiKVM device"""
+        """Register a new Super Ducks device"""
         device = SuperDucksDevice(device_id, ip_address, username, password)
         self.devices[device_id] = device
         
@@ -293,4 +293,4 @@ class PiKVMManager:
         self.devices.clear()
 
 # Global manager instance
-pikvm_manager = PiKVMManager()
+superducks_manager = SuperDucksManager()
