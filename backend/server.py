@@ -770,6 +770,386 @@ async def get_input_logs(
     
     return logs
 
+# Import hardware and streaming modules
+from pikvm_hardware import pikvm_hardware_manager, PiKVMDevice
+from video_streaming import video_stream_manager, VideoStreamConfig, StreamQuality, StreamType
+
+# PiKVM Hardware Integration Routes
+@api_router.post("/hardware/devices")
+async def add_pikvm_device(
+    device_data: dict,
+    current_user: dict = Depends(require_role(UserRole.ADMIN))
+):
+    """Add a real PiKVM hardware device"""
+    try:
+        # Create PiKVM device
+        device = PiKVMDevice(
+            id=device_data.get("id", str(uuid.uuid4())),
+            name=device_data["name"],
+            ip_address=device_data["ip_address"],
+            port=device_data.get("port", 80),
+            username=device_data["username"],
+            password=device_data["password"],
+            use_https=device_data.get("use_https", False)
+        )
+        
+        # Add to hardware manager
+        success = await pikvm_hardware_manager.add_device(device)
+        
+        if success:
+            # Also add to database
+            device_doc = {
+                "id": device.id,
+                "name": device.name,
+                "ip_address": device.ip_address,
+                "port": device.port,
+                "use_https": device.use_https,
+                "status": device.status.value,
+                "capabilities": device.capabilities,
+                "hardware_type": "real_pikvm",
+                "created_at": datetime.utcnow().isoformat(),
+                "created_by": current_user["id"]
+            }
+            
+            await db.devices.insert_one(device_doc)
+            
+            await log_user_action(
+                user_id=current_user["id"],
+                action="add_hardware_device",
+                device_id=device.id,
+                details={"name": device.name, "ip_address": device.ip_address}
+            )
+            
+            return {
+                "success": True,
+                "device": {
+                    "id": device.id,
+                    "name": device.name,
+                    "ip_address": device.ip_address,
+                    "status": device.status.value,
+                    "capabilities": device.capabilities
+                }
+            }
+        else:
+            raise HTTPException(status_code=400, detail="Failed to connect to PiKVM device")
+            
+    except Exception as e:
+        logger.error(f"Error adding PiKVM device: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/hardware/devices/{device_id}/status")
+async def get_hardware_device_status(
+    device_id: str,
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Get real-time status of PiKVM hardware device"""
+    if not await has_permission(current_user, device_id, PermissionLevel.VIEW_ONLY):
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    
+    try:
+        status = await pikvm_hardware_manager.get_device_status(device_id)
+        return status
+    except Exception as e:
+        logger.error(f"Error getting device status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/hardware/devices/{device_id}/power/{action}")
+async def hardware_power_action(
+    device_id: str,
+    action: str,
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Execute power action on real PiKVM hardware"""
+    if not await has_permission(current_user, device_id, PermissionLevel.CONTROL):
+        raise HTTPException(status_code=403, detail="Insufficient permissions for power control")
+    
+    valid_actions = ["power_on", "power_off", "restart", "reset", "sleep"]
+    if action not in valid_actions:
+        raise HTTPException(status_code=400, detail=f"Invalid action. Must be one of: {valid_actions}")
+    
+    try:
+        result = await pikvm_hardware_manager.power_action(device_id, action)
+        
+        if result["success"]:
+            # Log the action
+            log_id = str(uuid.uuid4())
+            log_entry = {
+                "id": log_id,
+                "device_id": device_id,
+                "action": action,
+                "user_id": current_user["id"],
+                "username": current_user["username"],
+                "timestamp": datetime.utcnow().isoformat(),
+                "hardware_response": result.get("pikvm_response", {})
+            }
+            
+            await db.power_logs.insert_one(log_entry)
+            
+            await log_user_action(
+                user_id=current_user["id"],
+                action=f"hardware_power_{action}",
+                device_id=device_id
+            )
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Hardware power action error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/hardware/devices/{device_id}/keyboard")
+async def hardware_keyboard_input(
+    device_id: str,
+    input_data: dict,
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Send keyboard input to real PiKVM hardware"""
+    if not await has_permission(current_user, device_id, PermissionLevel.CONTROL):
+        raise HTTPException(status_code=403, detail="Insufficient permissions for input control")
+    
+    try:
+        keys = input_data.get("keys", [])
+        modifiers = input_data.get("modifiers", [])
+        
+        result = await pikvm_hardware_manager.send_keyboard_input(device_id, keys, modifiers)
+        
+        if result["success"]:
+            # Log the input
+            log_id = str(uuid.uuid4())
+            log_entry = {
+                "id": log_id,
+                "device_id": device_id,
+                "type": "keyboard",
+                "keys": keys,
+                "modifiers": modifiers,
+                "user_id": current_user["id"],
+                "username": current_user["username"],
+                "timestamp": datetime.utcnow().isoformat(),
+                "hardware_response": result.get("pikvm_response", {})
+            }
+            
+            await db.input_logs.insert_one(log_entry)
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Hardware keyboard input error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/hardware/devices/{device_id}/mouse")
+async def hardware_mouse_input(
+    device_id: str,
+    input_data: dict,
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Send mouse input to real PiKVM hardware"""
+    if not await has_permission(current_user, device_id, PermissionLevel.CONTROL):
+        raise HTTPException(status_code=403, detail="Insufficient permissions for input control")
+    
+    try:
+        x = input_data.get("x", 0)
+        y = input_data.get("y", 0)
+        buttons = input_data.get("buttons", [])
+        scroll = input_data.get("scroll", 0)
+        
+        result = await pikvm_hardware_manager.send_mouse_input(device_id, x, y, buttons, scroll)
+        
+        if result["success"]:
+            # Log the input
+            log_id = str(uuid.uuid4())
+            log_entry = {
+                "id": log_id,
+                "device_id": device_id,
+                "type": "mouse",
+                "x": x,
+                "y": y,
+                "buttons": buttons,
+                "scroll": scroll,
+                "user_id": current_user["id"],
+                "username": current_user["username"],
+                "timestamp": datetime.utcnow().isoformat(),
+                "hardware_response": result.get("pikvm_response", {})
+            }
+            
+            await db.input_logs.insert_one(log_entry)
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Hardware mouse input error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Video Streaming Routes
+@api_router.post("/streaming/start/{device_id}")
+async def start_video_stream(
+    device_id: str,
+    stream_config: dict,
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Start video stream for a device"""
+    if not await has_permission(current_user, device_id, PermissionLevel.VIEW_ONLY):
+        raise HTTPException(status_code=403, detail="Insufficient permissions to view video stream")
+    
+    try:
+        config = VideoStreamConfig(
+            device_id=device_id,
+            quality=StreamQuality(stream_config.get("quality", "medium")),
+            stream_type=StreamType(stream_config.get("stream_type", "webrtc")),
+            fps=stream_config.get("fps", 30),
+            bitrate=stream_config.get("bitrate", 2000),
+            width=stream_config.get("width", 1280),
+            height=stream_config.get("height", 720),
+            enable_audio=stream_config.get("enable_audio", False)
+        )
+        
+        result = await video_stream_manager.start_stream(config)
+        
+        if result["success"]:
+            await log_user_action(
+                user_id=current_user["id"],
+                action="start_video_stream",
+                device_id=device_id,
+                details={"stream_type": config.stream_type.value, "quality": config.quality.value}
+            )
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error starting video stream: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/streaming/stop/{device_id}")
+async def stop_video_stream(
+    device_id: str,
+    stream_type: Optional[str] = None,
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Stop video stream for a device"""
+    if not await has_permission(current_user, device_id, PermissionLevel.VIEW_ONLY):
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    
+    try:
+        stream_type_enum = StreamType(stream_type) if stream_type else None
+        result = await video_stream_manager.stop_stream(device_id, stream_type_enum)
+        
+        if result["success"]:
+            await log_user_action(
+                user_id=current_user["id"],
+                action="stop_video_stream",
+                device_id=device_id
+            )
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error stopping video stream: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/streaming/active")
+async def get_active_streams(
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Get list of active video streams"""
+    try:
+        streams = video_stream_manager.get_active_streams()
+        
+        # Filter streams based on user permissions
+        accessible_device_ids = await get_user_accessible_devices(current_user)
+        filtered_streams = [
+            stream for stream in streams 
+            if stream["device_id"] in accessible_device_ids
+        ]
+        
+        return {"active_streams": filtered_streams}
+        
+    except Exception as e:
+        logger.error(f"Error getting active streams: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/hardware/devices/{device_id}/snapshot")
+async def get_video_snapshot(
+    device_id: str,
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Get video snapshot from PiKVM hardware"""
+    if not await has_permission(current_user, device_id, PermissionLevel.VIEW_ONLY):
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    
+    try:
+        result = await pikvm_hardware_manager.get_video_snapshot(device_id)
+        
+        if result["success"]:
+            await log_user_action(
+                user_id=current_user["id"],
+                action="capture_video_snapshot",
+                device_id=device_id
+            )
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error capturing video snapshot: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# WebRTC Signaling WebSocket
+@api_router.websocket("/webrtc/{device_id}")
+async def webrtc_signaling(websocket: WebSocket, device_id: str):
+    """WebRTC signaling endpoint"""
+    try:
+        await websocket.accept()
+        
+        # Handle WebRTC signaling
+        await video_stream_manager.handle_webrtc_signaling(device_id, websocket)
+        
+    except WebSocketDisconnect:
+        logger.info(f"WebRTC signaling disconnected for device {device_id}")
+    except Exception as e:
+        logger.error(f"WebRTC signaling error for device {device_id}: {str(e)}")
+
+# Video Streaming WebSocket
+@api_router.websocket("/stream/{device_id}")
+async def video_streaming(websocket: WebSocket, device_id: str):
+    """Video streaming WebSocket endpoint"""
+    try:
+        await websocket.accept()
+        
+        # Add connection to stream manager
+        await video_stream_manager.add_websocket_connection(device_id, websocket)
+        
+        # Keep connection alive and handle messages
+        while True:
+            try:
+                message = await websocket.receive_json()
+                
+                if message.get("type") == "start_stream":
+                    # Start streaming
+                    config = VideoStreamConfig(
+                        device_id=device_id,
+                        quality=StreamQuality(message.get("quality", "medium")),
+                        stream_type=StreamType(message.get("stream_type", "mjpeg"))
+                    )
+                    await video_stream_manager.start_stream(config)
+                    
+                elif message.get("type") == "stop_stream":
+                    # Stop streaming
+                    await video_stream_manager.stop_stream(device_id)
+                    
+                elif message.get("type") == "quality_change":
+                    # Change quality
+                    await video_stream_manager._change_stream_quality(
+                        device_id, 
+                        message.get("quality", "medium")
+                    )
+                    
+            except WebSocketDisconnect:
+                break
+            except Exception as e:
+                logger.error(f"Video streaming WebSocket error: {str(e)}")
+                break
+                
+    finally:
+        await video_stream_manager.remove_websocket_connection(device_id, websocket)
+
 # Include the router in the main app
 app.include_router(api_router)
 
