@@ -25,13 +25,18 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const Dashboard = () => {
+const Dashboard = ({ user, token, onLogout }) => {
   const [devices, setDevices] = useState([]);
   const [systemMetrics, setSystemMetrics] = useState(null);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [logs, setLogs] = useState([]);
   const [activeTab, setActiveTab] = useState('control'); // 'control', 'files', 'settings'
+
+  // Add auth headers to axios requests
+  const authHeaders = {
+    headers: { Authorization: `Bearer ${token}` }
+  };
 
   useEffect(() => {
     fetchDevices();
@@ -49,19 +54,22 @@ const Dashboard = () => {
 
   const fetchDevices = async () => {
     try {
-      const response = await axios.get(`${API}/devices`);
+      const response = await axios.get(`${API}/devices`, authHeaders);
       setDevices(response.data);
       if (response.data.length > 0 && !selectedDevice) {
         setSelectedDevice(response.data[0]);
       }
     } catch (error) {
       console.error('Error fetching devices:', error);
+      if (error.response?.status === 401) {
+        onLogout();
+      }
     }
   };
 
   const fetchSystemMetrics = async () => {
     try {
-      const response = await axios.get(`${API}/system/metrics`);
+      const response = await axios.get(`${API}/system/metrics`, authHeaders);
       setSystemMetrics(response.data);
     } catch (error) {
       console.error('Error fetching system metrics:', error);
@@ -71,8 +79,8 @@ const Dashboard = () => {
   const fetchLogs = async () => {
     try {
       const [powerLogsRes, inputLogsRes] = await Promise.all([
-        axios.get(`${API}/logs/power?limit=10`),
-        axios.get(`${API}/logs/input?limit=10`)
+        axios.get(`${API}/logs/power?limit=10`, authHeaders),
+        axios.get(`${API}/logs/input?limit=10`, authHeaders)
       ]);
       
       const allLogs = [
@@ -87,16 +95,23 @@ const Dashboard = () => {
   };
 
   const addDevice = async () => {
-    const name = prompt('Device name:');
-    const ip = prompt('IP Address:');
+    const name = prompt('Nome do dispositivo:');
+    const ip = prompt('Endereço IP:');
+    const location = prompt('Localização (opcional):') || '';
+    const description = prompt('Descrição (opcional):') || '';
     
     if (name && ip) {
       try {
-        await axios.post(`${API}/devices`, { name, ip_address: ip });
+        await axios.post(`${API}/devices`, { 
+          name, 
+          ip_address: ip,
+          location,
+          description
+        }, authHeaders);
         fetchDevices();
       } catch (error) {
         console.error('Error adding device:', error);
-        alert('Error adding device');
+        alert('Erro ao adicionar dispositivo');
       }
     }
   };
@@ -108,11 +123,11 @@ const Dashboard = () => {
       await axios.post(`${API}/power/action`, {
         device_id: selectedDevice.id,
         action: action
-      });
+      }, authHeaders);
       fetchLogs();
     } catch (error) {
       console.error('Error executing power action:', error);
-      alert('Error executing power action');
+      alert('Erro ao executar ação de energia');
     }
   };
 
