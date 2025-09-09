@@ -38,7 +38,7 @@ async def create_admin_user():
         admin_user = {
             "id": str(uuid.uuid4()),
             "username": "admin",
-            "email": "admin@pikvm-enterprise.local",
+            "email": "admin@superducks-enterprise.local",
             "password_hash": pwd_context.hash("admin123"),
             "role": "super_admin",
             "active": True,
