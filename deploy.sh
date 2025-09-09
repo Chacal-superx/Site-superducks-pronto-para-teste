@@ -141,7 +141,7 @@ show_info() {
     echo "🎉 DEPLOYMENT CONCLUÍDO COM SUCESSO!"
     echo "===================================="
     echo ""
-    print_success "PiKVM Enterprise Manager está rodando!"
+    print_success "Super Ducks Enterprise Manager está rodando!"
     echo ""
     echo -e "${BLUE}📱 URLs de Acesso:${NC}"
     echo "   Frontend: http://localhost:3000"
