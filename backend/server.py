@@ -17,7 +17,7 @@ import psutil
 import aiofiles
 from enum import Enum
 
-# Import authentication and PiKVM integration
+# Import authentication and Super Ducks integration
 from auth import (
     User, UserCreate, UserLogin, Token, UserRole, PermissionLevel,
     authenticate_user, create_access_token, get_current_active_user,
