@@ -688,17 +688,86 @@ async def health_check():
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Service unhealthy: {str(e)}")
 
-# Logs and Diagnostics
+# Video Streaming Routes
+@api_router.get("/devices/{device_id}/stream")
+async def get_video_stream(
+    device_id: str, 
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Get video stream URL for device"""
+    # Check permissions
+    if not await has_permission(current_user, device_id, PermissionLevel.VIEW_ONLY):
+        raise HTTPException(status_code=403, detail="Insufficient permissions to view device")
+    
+    # Get stream URL from PiKVM Manager
+    stream_url = await pikvm_manager.get_stream_url(device_id)
+    
+    if not stream_url:
+        raise HTTPException(status_code=404, detail="Device not found or stream unavailable")
+    
+    # Log stream access
+    await log_user_action(
+        user_id=current_user["id"],
+        action="access_video_stream",
+        device_id=device_id
+    )
+    
+    return {"stream_url": stream_url, "device_id": device_id}
+
+# Audit and Logging Routes
+@api_router.get("/audit/logs")
+async def get_audit_logs(
+    limit: int = 100,
+    device_id: Optional[str] = None,
+    user_id: Optional[str] = None,
+    current_user: dict = Depends(require_role(UserRole.ADMIN))
+):
+    """Get audit logs (Admin only)"""
+    filter_query = {}
+    
+    if device_id:
+        filter_query["device_id"] = device_id
+    if user_id:
+        filter_query["user_id"] = user_id
+    
+    logs = await db.audit_log.find(filter_query, {"_id": 0}).sort("timestamp", -1).limit(limit).to_list(limit)
+    
+    return logs
+
 @api_router.get("/logs/power")
-async def get_power_logs(limit: int = 100):
-    """Get power action logs"""
-    logs = await db.power_logs.find({}, {"_id": 0}).sort("timestamp", -1).limit(limit).to_list(limit)
+async def get_power_logs(
+    limit: int = 100, 
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Get power action logs for accessible devices"""
+    accessible_device_ids = await get_user_accessible_devices(current_user)
+    
+    if not accessible_device_ids:
+        return []
+    
+    logs = await db.power_logs.find(
+        {"device_id": {"$in": accessible_device_ids}}, 
+        {"_id": 0}
+    ).sort("timestamp", -1).limit(limit).to_list(limit)
+    
     return logs
 
 @api_router.get("/logs/input")
-async def get_input_logs(limit: int = 100):
-    """Get input logs"""
-    logs = await db.input_logs.find({}, {"_id": 0}).sort("timestamp", -1).limit(limit).to_list(limit)
+async def get_input_logs(
+    limit: int = 100, 
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Get input logs for accessible devices"""
+    accessible_device_ids = await get_user_accessible_devices(current_user)
+    
+    if not accessible_device_ids:
+        return []
+    
+    logs = await db.input_logs.find(
+        {"device_id": {"$in": accessible_device_ids}}, 
+        {"_id": 0}
+    ).sort("timestamp", -1).limit(limit).to_list(limit)
+    
     return logs
 
 # Include the router in the main app
