@@ -110,10 +110,14 @@ const LoginPage = ({ onLogin }) => {
       <div className="w-full max-w-md">
         {/* Logo and Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full mb-4">
-            <Monitor className="h-8 w-8 text-blue-600" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
+            <img 
+              src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0xNSAyNUwxNSAxNUwyNSAxNUwyNSAyNUwxNSAyNVoiIGZpbGw9IiMxRjJBNDciLz4KPC9zdmc+Cg=="
+              alt="SuperDucks Logo" 
+              className="h-8 w-8"
+            />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">PiKVM Manager</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Super Ducks Manager</h1>
           <p className="text-blue-200">Acesso remoto seguro e profissional</p>
         </div>
 
