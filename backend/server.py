@@ -402,61 +402,138 @@ async def delete_device(device_id: str, current_user: dict = Depends(require_rol
     
     return {"message": "Device deleted successfully"}
 
-# Power Management Routes
+# Power Management with Real PiKVM Integration
 @api_router.post("/power/action")
-async def execute_power_action(request: PowerActionRequest):
+async def execute_power_action(
+    request: PowerActionRequest, 
+    current_user: dict = Depends(get_current_active_user),
+    client_request: Request = None
+):
     """Execute power action on a device"""
-    # In a real implementation, this would communicate with the actual PiKVM device
+    # Check permissions
+    if not await has_permission(current_user, request.device_id, PermissionLevel.CONTROL):
+        raise HTTPException(status_code=403, detail="Insufficient permissions for power control")
+    
+    # Verify device exists
     device = await db.devices.find_one({"id": request.device_id})
     if not device:
         raise HTTPException(status_code=404, detail="Device not found")
     
-    # Simulate power action (in real implementation, use PiKVM APIs)
+    # Execute power action via PiKVM Manager
+    success = await pikvm_manager.execute_power_action(request.device_id, request.action)
+    
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to execute power action")
+    
+    # Log the action
     action_log = {
         "id": str(uuid.uuid4()),
         "device_id": request.device_id,
         "action": request.action,
         "timestamp": datetime.utcnow(),
-        "status": "success"
+        "status": "success" if success else "failed",
+        "user_id": current_user["id"]
     }
     
     await db.power_logs.insert_one(action_log)
+    
+    # Log user action for audit
+    await log_user_action(
+        user_id=current_user["id"],
+        action="power_control",
+        device_id=request.device_id,
+        details={"power_action": request.action, "success": success},
+        ip_address=client_request.client.host if client_request and client_request.client else "unknown"
+    )
+    
     await manager.broadcast(json.dumps({
         "type": "power_action",
         "device_id": request.device_id,
         "action": request.action,
-        "timestamp": action_log["timestamp"].isoformat()
+        "timestamp": action_log["timestamp"].isoformat(),
+        "user": current_user["username"]
     }))
     
     return {"message": f"Power action '{request.action}' executed successfully", "log_id": action_log["id"]}
 
-# Input Control Routes
+# Input Control with Real PiKVM Integration
 @api_router.post("/input/keyboard")
-async def send_keyboard_input(input_data: KeyboardInput):
+async def send_keyboard_input(
+    input_data: KeyboardInput, 
+    current_user: dict = Depends(get_current_active_user),
+    client_request: Request = None
+):
     """Send keyboard input to remote device"""
-    # In real implementation, this would send keys to the PiKVM device
+    # Check permissions
+    if not await has_permission(current_user, input_data.device_id, PermissionLevel.CONTROL):
+        raise HTTPException(status_code=403, detail="Insufficient permissions for input control")
+    
+    # Execute keyboard input via PiKVM Manager
+    success = await pikvm_manager.send_keyboard_input(
+        input_data.device_id, 
+        input_data.keys, 
+        input_data.modifiers or []
+    )
+    
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to send keyboard input")
+    
+    # Log the input
     input_log = {
         "id": str(uuid.uuid4()),
         "device_id": input_data.device_id,
         "type": "keyboard",
         "keys": input_data.keys,
         "modifiers": input_data.modifiers,
-        "timestamp": datetime.utcnow()
+        "timestamp": datetime.utcnow(),
+        "user_id": current_user["id"]
     }
     
     await db.input_logs.insert_one(input_log)
+    
+    # Log user action for audit
+    await log_user_action(
+        user_id=current_user["id"],
+        action="keyboard_input",
+        device_id=input_data.device_id,
+        details={"keys": input_data.keys, "modifiers": input_data.modifiers},
+        ip_address=client_request.client.host if client_request and client_request.client else "unknown"
+    )
+    
     await manager.broadcast(json.dumps({
         "type": "keyboard_input",
         "device_id": input_data.device_id,
         "keys": input_data.keys,
-        "timestamp": input_log["timestamp"].isoformat()
+        "timestamp": input_log["timestamp"].isoformat(),
+        "user": current_user["username"]
     }))
     
     return {"message": "Keyboard input sent successfully", "log_id": input_log["id"]}
 
 @api_router.post("/input/mouse")
-async def send_mouse_input(input_data: MouseInput):
+async def send_mouse_input(
+    input_data: MouseInput, 
+    current_user: dict = Depends(get_current_active_user),
+    client_request: Request = None
+):
     """Send mouse input to remote device"""
+    # Check permissions
+    if not await has_permission(current_user, input_data.device_id, PermissionLevel.CONTROL):
+        raise HTTPException(status_code=403, detail="Insufficient permissions for input control")
+    
+    # Execute mouse input via PiKVM Manager
+    success = await pikvm_manager.send_mouse_input(
+        input_data.device_id,
+        input_data.x,
+        input_data.y,
+        input_data.button,
+        input_data.action
+    )
+    
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to send mouse input")
+    
+    # Log the input
     input_log = {
         "id": str(uuid.uuid4()),
         "device_id": input_data.device_id,
@@ -465,17 +542,29 @@ async def send_mouse_input(input_data: MouseInput):
         "y": input_data.y,
         "button": input_data.button,
         "action": input_data.action,
-        "timestamp": datetime.utcnow()
+        "timestamp": datetime.utcnow(),
+        "user_id": current_user["id"]
     }
     
     await db.input_logs.insert_one(input_log)
+    
+    # Log user action for audit
+    await log_user_action(
+        user_id=current_user["id"],
+        action="mouse_input",
+        device_id=input_data.device_id,
+        details={"x": input_data.x, "y": input_data.y, "button": input_data.button, "action": input_data.action},
+        ip_address=client_request.client.host if client_request and client_request.client else "unknown"
+    )
+    
     await manager.broadcast(json.dumps({
         "type": "mouse_input",
         "device_id": input_data.device_id,
         "x": input_data.x,
         "y": input_data.y,
         "action": input_data.action,
-        "timestamp": input_log["timestamp"].isoformat()
+        "timestamp": input_log["timestamp"].isoformat(),
+        "user": current_user["username"]
     }))
     
     return {"message": "Mouse input sent successfully", "log_id": input_log["id"]}
