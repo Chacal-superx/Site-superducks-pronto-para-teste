@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Initialize Admin User Script
-Creates the initial super admin user for PiKVM Enterprise Manager
+Creates the initial super admin user for Super Ducks Enterprise Manager
 """
 import asyncio
 import os
