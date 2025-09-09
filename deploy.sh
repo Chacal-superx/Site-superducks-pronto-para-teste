@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# PiKVM Enterprise Manager - Deployment Script
+# Super Ducks Enterprise Manager - Deployment Script
 # Autor: SuperDucks Team
 # Data: 2025
 
 set -e
 
-echo "🚀 PiKVM Enterprise Manager - Deployment Script"
+echo "🚀 Super Ducks Enterprise Manager - Deployment Script"
 echo "================================================"
 
 # Colors for output
