@@ -1,23 +1,23 @@
-# 🚀 PiKVM Enterprise Manager
+# 🚀 Super Ducks Enterprise Manager
 
-Sistema completo de gestão centralizada para múltiplos dispositivos PiKVM com interface web empresarial, controle de usuários e permissões granulares.
+Sistema completo de gestão centralizada para múltiplos dispositivos Super Ducks com interface web empresarial, controle de usuários e permissões granulares.
 
-![PiKVM Enterprise Manager](https://img.shields.io/badge/PiKVM-Enterprise-blue) ![Docker](https://img.shields.io/badge/Docker-Ready-green) ![React](https://img.shields.io/badge/React-18-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-Latest-green)
+![Super Ducks Enterprise Manager](https://img.shields.io/badge/SuperDucks-Enterprise-blue) ![Docker](https://img.shields.io/badge/Docker-Ready-green) ![React](https://img.shields.io/badge/React-18-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-Latest-green)
 
 ## ✨ Características Principais
 
 - 🔐 **Sistema Multi-usuário** com 4 níveis de acesso (Super Admin, Admin, Operator, Viewer)
 - 🎯 **Interface Dupla**: Admin (completa) + User (simplificada focada no controle)
-- 🌐 **Portal Único** para gerenciar 50+ dispositivos PiKVM centralizadamente
+- 🌐 **Portal Único** para gerenciar 50+ dispositivos Super Ducks centralizadamente
 - 🛡️ **Segurança Enterprise** com JWT + Audit Logs + Rate Limiting
 - ⚡ **Deploy Rápido** com Docker Compose (5 minutos)
-- 🎨 **Interface Moderna** em português com branding personalizado
+- 🎨 **Interface Moderna** em português com branding SuperDucks
 - 📱 **Design Responsivo** para mobile, tablet e desktop
-- 🔧 **Integração Real** com dispositivos PiKVM via HTTP API
+- 🔧 **Integração Real** com dispositivos Super Ducks via HTTP API
 
 ## 🎯 Problema Resolvido
 
-**ANTES**: 50+ interfaces PiKVM separadas, sem controle de usuários, sem auditoria
+**ANTES**: 50+ interfaces Super Ducks separadas, sem controle de usuários, sem auditoria
 **DEPOIS**: 1 portal único, permissões granulares, auditoria completa, interface empresarial
 
 ## 🚀 Início Rápido (5 minutos)
@@ -29,8 +29,8 @@ Sistema completo de gestão centralizada para múltiplos dispositivos PiKVM com 
 ### Instalação Automática
 ```bash
 # 1. Clonar repositório
-git clone https://github.com/SEU_USUARIO/pikvm-enterprise-manager.git
-cd pikvm-enterprise-manager
+git clone https://github.com/SEU_USUARIO/superducks-enterprise-manager.git
+cd superducks-enterprise-manager
 
 # 2. Executar deployment automático
 chmod +x deploy.sh
