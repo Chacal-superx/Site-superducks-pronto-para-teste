@@ -357,6 +357,9 @@ frontend:
       - working: true
         agent: "main"
         comment: "Added tabbed interface for Control, Files, and Settings sections"
+      - working: true
+        agent: "testing"
+        comment: "TESTED SUCCESSFULLY: Tabbed interface working perfectly. All 3 tabs (Control, Files, Settings) are functional and switch correctly. Control tab shows video stream, power controls, quick actions, and NEW resolution settings. Files tab shows complete file upload interface. Settings tab shows placeholder content with 'Device settings and configuration' and 'Coming soon...' text. Tab switching is smooth and maintains state properly."
 
   - task: "UI Components Library"
     implemented: true
