@@ -126,7 +126,7 @@ async def setup_database_indexes():
         client.close()
 
 async def main():
-    print("🚀 Initializing PiKVM Enterprise Manager Database...")
+    print("🚀 Initializing Super Ducks Enterprise Manager Database...")
     
     await setup_database_indexes()
     await create_admin_user()
@@ -136,7 +136,7 @@ async def main():
     print("1. Start the backend server")
     print("2. Login with admin/admin123")
     print("3. Change the default password")
-    print("4. Add your PiKVM devices")
+    print("4. Add your Super Ducks devices")
     print("5. Create users and assign permissions")
 
 if __name__ == "__main__":
