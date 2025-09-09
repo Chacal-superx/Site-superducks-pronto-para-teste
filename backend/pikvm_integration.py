@@ -18,7 +18,7 @@ mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ.get('DB_NAME', 'test_database')]
 
-class PiKVMDevice:
+class SuperDucksDevice:
     def __init__(self, device_id: str, ip_address: str, username: str = "admin", password: str = "admin"):
         self.device_id = device_id
         self.ip_address = ip_address
@@ -162,11 +162,11 @@ class PiKVMDevice:
 
 class PiKVMManager:
     def __init__(self):
-        self.devices: Dict[str, PiKVMDevice] = {}
+        self.devices: Dict[str, SuperDucksDevice] = {}
     
     async def register_device(self, device_id: str, ip_address: str, username: str = "admin", password: str = "admin"):
         """Register a new PiKVM device"""
-        device = PiKVMDevice(device_id, ip_address, username, password)
+        device = SuperDucksDevice(device_id, ip_address, username, password)
         self.devices[device_id] = device
         
         # Update device status in database
@@ -235,7 +235,7 @@ class PiKVMManager:
             # Send individual key
             return await device.send_key(keys, True) and await device.send_key(keys, False)
     
-    async def _change_resolution(self, device: PiKVMDevice, resolution: str) -> bool:
+    async def _change_resolution(self, device: SuperDucksDevice, resolution: str) -> bool:
         """Change screen resolution (basic implementation)"""
         # This is a simplified implementation - actual resolution change
         # would depend on the target operating system
