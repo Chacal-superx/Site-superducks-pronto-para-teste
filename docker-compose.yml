@@ -3,33 +3,32 @@ version: '3.8'
 services:
   mongodb:
     image: mongo:7.0
-    container_name: pikvm_mongodb
+    container_name: superducks_mongodb
     restart: unless-stopped
     ports:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
-      - ./mongo-init:/docker-entrypoint-initdb.d
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: pikvm_admin_2025
-      MONGO_INITDB_DATABASE: pikvm_enterprise
+      MONGO_INITDB_ROOT_PASSWORD: superducks_admin_2025
+      MONGO_INITDB_DATABASE: superducks_enterprise
     networks:
-      - pikvm_network
+      - superducks_network
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: pikvm_backend
+    container_name: superducks_backend
     restart: unless-stopped
     ports:
       - "8001:8001"
     depends_on:
       - mongodb
     environment:
-      MONGO_URL: mongodb://admin:pikvm_admin_2025@mongodb:27017/pikvm_enterprise?authSource=admin
-      DB_NAME: pikvm_enterprise
+      MONGO_URL: mongodb://admin:superducks_admin_2025@mongodb:27017/superducks_enterprise?authSource=admin
+      DB_NAME: superducks_enterprise
       JWT_SECRET: super_secret_jwt_key_change_in_production_2025
       JWT_EXPIRE_HOURS: 24
       ENVIRONMENT: production
@@ -38,13 +37,13 @@ services:
     volumes:
       - ./uploads:/tmp/uploads
     networks:
-      - pikvm_network
+      - superducks_network
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: pikvm_frontend
+    container_name: superducks_frontend
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -54,11 +53,11 @@ services:
       REACT_APP_BACKEND_URL: http://localhost:8001
       NODE_ENV: production
     networks:
-      - pikvm_network
+      - superducks_network
 
   nginx:
     image: nginx:alpine
-    container_name: pikvm_nginx
+    container_name: superducks_nginx
     restart: unless-stopped
     ports:
       - "80:80"
@@ -70,12 +69,12 @@ services:
       - frontend
       - backend
     networks:
-      - pikvm_network
+      - superducks_network
 
 volumes:
   mongodb_data:
     driver: local
 
 networks:
-  pikvm_network:
+  superducks_network:
     driver: bridge
