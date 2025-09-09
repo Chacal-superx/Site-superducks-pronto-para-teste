@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testes e Recuperação - PiKVM + Oracle Cloud</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --gray: #7f8c8d;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--secondary);
+        }
+        
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        h2 {
+            color: var(--secondary);
+            margin: 25px 0 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary);
+        }
+        
+        h3 {
+            color: var(--primary);
+            margin: 20px 0 10px;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .status-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .status-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .panic-button {
+            display: block;
+            width: 100%;
+            padding: 20px;
+            background-color: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 30px 0;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+        
+        .panic-button:hover {
+            background-color: #c0392b;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.6);
+        }
+        
+        .test-section {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--secondary);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .test-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+        
+        .test-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        
+        .location {
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 10px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .location:before {
+            content: '📍';
+            margin-right: 5px;
+        }
+        
+        .command {
+            background-color: var(--dark);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            margin: 15px 0;
+            position: relative;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background-color: #219653;
+        }
+        
+        .note {
+            background-color: #fff8e1;
+            border-left: 4px solid var(--warning);
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .warning {
+            background-color: #ffebee;
+            border-left: 4px solid var(--danger);
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .success {
+            background-color: #e8f5e9;
+            border-left: 4px solid var(--success);
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .instructions {
+            background-color: #e3f2fd;
+            border-left: 4px solid var(--secondary);
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .test-result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .result-pass {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .result-fail {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .test-btn {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .test-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: var(--gray);
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔧 Testes e Recuperação - PiKVM + Oracle Cloud</h1>
+            <p>Painel de testes para verificar a configuração e botão de pânico para restaurar o sistema</p>
+        </header>
+
+        <div class="instructions">
+            <strong>📋 Como usar este painel:</strong> 
+            <ol>
+                <li>Execute os backups primeiro (seção 1)</li>
+                <li>Execute os testes em ordem (seções 2-5)</li>
+                <li>Se algum teste falhar, use os comandos de correção fornecidos</li>
+                <li>Em caso de problemas graves, use o BOTÃO DE PÂNICO para restaurar o sistema</li>
+            </ol>
+        </div>
+
+        <div class="dashboard">
+            <div class="status-card">
+                <div class="status-icon">💾</div>
+                <h3>Backups Realizados</h3>
+                <p id="backup-status">Não iniciado</p>
+            </div>
+            <div class="status-card">
+                <div class="status-icon">✅</div>
+                <h3>Testes Concluídos</h3>
+                <p id="test-status">0/12</p>
+            </div>
+        </div>
+
+        <button class="panic-button" onclick="showPanicCommands()">🚨 BOTÃO DE PÂNICO 🚨</button>
+
+        <div id="panic-commands" class="hidden">
+            <h2>Comandos de Recuperação de Emergência</h2>
+            <div class="warning">
+                <strong>⚠️ AVISO:</strong> Use estes comandos apenas se o sistema estiver com problemas graves após as alterações.
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">
+                    <div class="test-icon">🔙</div>
+                    <h3>Restaurar Backup do Nginx</h3>
+                </div>
+                <div class="location">Executar na: Instância Oracle (como root)</div>
+                <div class="command">
+# Restaurar último backup do Nginx
+LAST_BACKUP=$(ls -t /etc/nginx/conf.d/pikvm.conf.bak.* | head -n1)
+if [ -f "$LAST_BACKUP" ]; then
+    cp "$LAST_BACKUP" /etc/nginx/conf.d/pikvm.conf
+    nginx -t && systemctl reload nginx
+    echo "Backup do Nginx restaurado: $LAST_BACKUP"
+else
+    echo "Nenhum backup encontrado!"
+fi
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">
+                    <div class="test-icon">🔙</div>
+                    <h3>Restaurar Serviços do PiKVM</h3>
+                </div>
+                <div class="location">Executar no: PiKVM (via SSH)</div>
+                <div class="command">
+# Restaurar serviços essenciais do PiKVM
+systemctl restart kvmd
+systemctl restart kvmd-nginx
+systemctl restart tailscaled
+echo "Serviços do PiKVM reiniciados"
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">
+                    <div class="test-icon">🔙</div>
+                    <h3>Reiniciar Rede no PiKVM</h3>
+                </div>
+                <div class="location">Executar no: PiKVM (via SSH)</div>
+                <div class="command">
+# Reiniciar serviços de rede
+systemctl restart systemd-networkd
+systemctl restart dhcpcd
+echo "Serviços de rede reiniciados"
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="test-title">
+                    <div class="test-icon">🔙</div>
+                    <h3>Reiniciar Instância Oracle</h3>
+                </div>
+                <div class="location">Executar na: Instância Oracle (como root)</div>
+                <div class="command">
+# Reiniciar serviços críticos
+systemctl restart nginx
+systemctl restart docker
+systemctl restart tailscaled
+echo "Serviços da instância Oracle reiniciados"
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+        </div>
+
+        <h2>1. Backups (Execute Primeiro)</h2>
+
+        <div class="test-section">
+            <div class="test-title" onclick="toggleSection('backup-nginx')">
+                <div class="test-icon">💾</div>
+                <h3>Backup da Configuração do Nginx</h3>
+            </div>
+            <div id="backup-nginx" class="hidden">
+                <div class="location">Executar na: Instância Oracle (como root)</div>
+                <div class="command">
+# Criar backup da configuração do Nginx
+cp /etc/nginx/conf.d/pikvm.conf /etc/nginx/conf.d/pikvm.conf.bak.$(date +%F-%H%M)
+echo "Backup criado: /etc/nginx/conf.d/pikvm.conf.bak.$(date +%F-%H%M)"
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                <button class="test-btn" onclick="markTestDone(this)">Marcar como Executado</button>
+                <div class="test-result"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title" onclick="toggleSection('backup-docker')">
+                <div class="test-icon">💾</div>
+                <h3>Backup dos Arquivos do Site</h3>
+            </div>
+            <div id="backup-docker" class="hidden">
+                <div class="location">Executar na: Instância Oracle (como root)</div>
+                <div class="command">
+# Fazer backup dos arquivos HTML do site
+tar -czf /opt/site-backup-$(date +%F-%H%M).tar.gz /opt/superducks/html/
+echo "Backup do site criado: /opt/site-backup-$(date +%F-%H%M).tar.gz"
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                <button class="test-btn" onclick="markTestDone(this)">Marcar como Executado</button>
+                <div class="test-result"></div>
+            </div>
+        </div>
+
+        <h2>2. Testes de Rede</h2>
+
+        <div class="test-section">
+            <div class="test-title" onclick="toggleSection('test-ping')">
+                <div class="test-icon">📡</div>
+                <h3>Testar Conectividade com Internet</h3>
+            </div>
+            <div id="test-ping" class="hidden">
+                <div class="location">Executar no: PiKVM (via SSH)</div>
+                <div class="command">
+# Testar conectividade com a internet
+ping -c 4 8.8.8.8
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                <div class="location">Executar na: Instância Oracle (como root)</div>
+                <div class="command">
+# Testar conectividade com a internet
+ping -c 4 8.8.8.8
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                <div class="note">
+                    <strong>Resultado esperado:</strong> Todos os 4 pacotes devem ser transmitidos com sucesso.<br>
+                    <strong>Se falhar:</strong> Verifique a conexão de rede e DNS.
+                </div>
+                <button class="test-btn" onclick="markTestDone(this)">Marcar como Executado</button>
+                <div class="test-result"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title" onclick="toggleSection('test-tailscale')">
+                <div class="test-icon">🔗</div>
+                <h3>Testar Conexão Tailscale</h3>
+            </div>
+            <div id="test-tailscale" class="hidden">
+                <div class="location">Executar no: PiKVM (via SSH)</div>
+                <div class="command">
+# Verificar status do Tailscale
+tailscale status
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                <div class="location">Executar na: Instância Oracle (como root)</div>
+                <div class="command">
+# Verificar status do Tailscale
+tailscale status
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                <div class="note">
+                    <strong>Resultado esperado:</strong> Ambos dispositivos devem aparecer como conectados e acessíveis.<br>
+                    <strong>Se falhar:</strong> Execute <code>tailscale up --reset</code> em ambos os dispositivos.
+                </div>
+                <button class="test-btn" onclick="markTestDone(this)">Marcar como Executado</button>
+                <div class="test-result"></div>
+            </div>
+        </div>
+
+        <h2>3. Testes de Serviços</h2>
+
+        <div class="test-section">
+            <div class="test-title" onclick="toggleSection('test-pikvm-services')">
+                <div class="test-icon">🖥️</div>
+                <h3>Testar Serviços do PiKVM</h3>
+            </div>
+            <div id="test-pikvm-services" class="hidden">
+                <div class="location">Executar no: PiKVM (via SSH)</div>
+                <div class="command">
+# Verificar se os serviços do PiKVM estão ativos
+systemctl is-active kvmd && echo "KVMD: ATIVO" || echo "KVMD: INATIVO"
+systemctl is-active kvmd-nginx && echo "Nginx: ATIVO" || echo "Nginx: INATIVO"
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                <div class="note">
+                    <strong>Resultado esperado:</strong> Todos os serviços devem estar ativos.<br>
+                    <strong>Se falhar:</strong> Execute <code>systemctl restart NOME_DO_SERVICO</code> para reiniciar o serviço.
+                </div>
+                <button class="test-btn" onclick="markTestDone(this)">Marcar como Executado</button>
+                <div class="test-result"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title" onclick="toggleSection('test-nginx')">
+                <div class="test-icon">🌐</div>
+                <h3>Testar Configuração do Nginx</h3>
+            </div>
+            <div id="test-nginx" class="hidden">
+                <div class="location">Executar na: Instância Oracle (como root)</div>
+                <div class="command">
+# Testar a configuração do Nginx
+nginx -t
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                <div class="note">
+                    <strong>Resultado esperado:</strong> "Syntax OK" deve aparecer.<br>
+                    <strong>Se falhar:</strong> Verifique o arquivo de configuração em <code>/etc/nginx/conf.d/pikvm.conf</code>.
+                </div>
+                <button class="test-btn" onclick="markTestDone(this)">Marcar como Executado</button>
+                <div class="test-result"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title" onclick="toggleSection('test-docker')">
+                <div class="test-icon">🐳</div>
+                <h3>Testar Container Docker</h3>
+            </div>
+            <div id="test-docker" class="hidden">
+                <div class="location">Executar na: Instância Oracle (como root)</div>
+                <div class="command">
+# Verificar se o container está em execução
+docker ps --filter "name=superducks" --format "table {{.Names}}\t{{.Status}}"
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                <div class="note">
+                    <strong>Resultado esperado:</strong> O container "superducks" deve estar com status "Up".<br>
+                    <strong>Se falhar:</strong> Execute <code>docker run -d -p 80:80 superducks</code>.
+                </div>
+                <button class="test-btn" onclick="markTestDone(this)">Marcar como Executado</button>
+                <div class="test-result"></div>
+            </div>
+        </div>
+
+        <h2>4. Testes de Acesso</h2>
+
+        <div class="test-section">
+            <div class="test-title" onclick="toggleSection('test-web')">
+                <div class="test-icon">🔍</div>
+                <h3>Testar Acesso Web ao PiKVM</h3>
+            </div>
+            <div id="test-web" class="hidden">
+                <div class="location">Executar na: Instância Oracle (como root)</div>
+                <div class="command">
+# Testar se o PiKVM responde via HTTP
+curl -I http://localhost
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                <div class="note">
+                    <strong>Resultado esperado:</strong> Resposta HTTP 200 ou 302.<br>
+                    <strong>Se falhar:</strong> Verifique se o Nginx está rodando e se a configuração está correta.
+                </div>
+                <button class="test-btn" onclick="markTestDone(this)">Marcar como Executado</button>
+                <div class="test-result"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title" onclick="toggleSection('test-ports')">
+                <div class="test-icon">🚪</div>
+                <h3>Testar Portas Abertas</h3>
+            </div>
+            <div id="test-ports" class="hidden">
+                <div class="location">Executar na: Instância Oracle (como root)</div>
+                <div class="command">
+# Verificar se as portas estão abertas
+netstat -tuln | grep ':80\>'
+netstat -tuln | grep ':443\>'
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                <div class="note">
+                    <strong>Resultado esperado:</strong> As portas 80 e 443 devem estar em estado LISTEN.<br>
+                    <strong>Se falhar:</strong> Verifique se o Nginx está rodando corretamente.
+                </div>
+                <button class="test-btn" onclick="markTestDone(this)">Marcar como Executado</button>
+                <div class="test-result"></div>
+            </div>
+        </div>
+
+        <h2>5. Testes de Funcionalidade</h2>
+
+        <div class="test-section">
+            <div class="test-title" onclick="toggleSection('test-stream')">
+                <div class="test-icon">📹</div>
+                <h3>Testar Streaming do PiKVM</h3>
+            </div>
+            <div id="test-stream" class="hidden">
+                <div class="location">Executar no: PiKVM (via SSH)</div>
+                <div class="command">
+# Verificar se o streaming está funcionando
+journalctl -u kvmd --no-pager -n 10 | grep -i "streaming\|capturing"
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                <div class="note">
+                    <strong>Resultado esperado:</strong> Mensagens indicando que o streaming está ativo.<br>
+                    <strong>Se falhar:</strong> Reinicie o serviço KVMD com <code>systemctl restart kvmd</code>.
+                </div>
+                <button class="test-btn" onclick="markTestDone(this)">Marcar como Executado</button>
+                <div class="test-result"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title" onclick="toggleSection('test-fw')">
+                <div class="test-icon">🛡️</div>
+                <h3>Testar Configuração de Firewall</h3>
+            </div>
+            <div id="test-fw" class="hidden">
+                <div class="location">Executar na: Instância Oracle (como root)</div>
+                <div class="command">
+# Verificar se as portas estão acessíveis externamente
+# Substitua IP_PUBLICO pelo IP público da sua instância
+curl -I http://IP_PUBLICO
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                <div class="note">
+                    <strong>Resultado esperado:</strong> Resposta HTTP da sua instância.<br>
+                    <strong>Se falhar:</strong> Verifique as regras de segurança no console da Oracle Cloud.
+                </div>
+                <button class="test-btn" onclick="markTestDone(this)">Marcar como Executado</button>
+                <div class="test-result"></div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Painel de Testes e Recuperação - PiKVM + Oracle Cloud | Desenvolvido para facilitar sua experiência</p>
+            <p>💡 Dica: Execute os backups antes de fazer qualquer alteração no sistema!</p>
+        </footer>
+    </div>
+
+    <script>
+        let testsCompleted = 0;
+        const totalTests = 12;
+        
+        function copyCommand(button) {
+            const command = button.parentElement;
+            const textToCopy = command.textContent.replace('Copiar', '').trim();
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'Copiado!';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Erro ao copiar texto: ', err);
+                alert('Erro ao copiar texto. Por favor, copie manualmente.');
+            });
+        }
+        
+        function toggleSection(id) {
+            const section = document.getElementById(id);
+            section.classList.toggle('hidden');
+        }
+        
+        function showPanicCommands() {
+            const panicSection = document.getElementById('panic-commands');
+            panicSection.classList.toggle('hidden');
+            
+            if (!panicSection.classList.contains('hidden')) {
+                alert('🚨 ATENÇÃO: Use os comandos de pânico apenas se o sistema estiver com problemas graves!');
+            }
+        }
+        
+        function markTestDone(button) {
+            const resultDiv = button.nextElementSibling;
+            resultDiv.classList.add('result-pass');
+            resultDiv.textContent = '✅ Teste marcado como concluído com sucesso!';
+            resultDiv.style.display = 'block';
+            
+            testsCompleted++;
+            document.getElementById('test-status').textContent = `${testsCompleted}/${totalTests}`;
+            
+            if (testsCompleted === 2) {
+                document.getElementById('backup-status').textContent = 'Completo';
+            }
+            
+            button.disabled = true;
+            button.textContent = '✅ Concluído';
+        }
+        
+        // Mostrar/ocultar seções ao clicar nos títulos
+        document.querySelectorAll('.test-title').forEach(title => {
+            title.addEventListener('click', function() {
+                const sectionId = this.getAttribute('onclick').match(/'([^']+)'/)[1];
+                toggleSection(sectionId);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+﻿📘 MANUAL COMPLETO – PiKVM + Tailscale + Oracle Cloud + Docker
+(Ubuntu 22.04+ em Oracle Cloud, kernel 6.14.0-1010-oracle, ambiente pronto para produção)
+
+🔹 1. Preparar o Cartão SD do PiKVM
+    1. Baixe a imagem oficial do PiKVM:
+👉 https://pikvm.org/download
+    2. Use balenaEtcher ou Raspberry Pi Imager para gravar no cartão SD.
+    3. Insira no Raspberry Pi + ligue o PiKVM na rede cabeada.
+🔹 2. Primeiro Acesso ao PiKVM (LAN)
+No seu computador Linux:
+ssh root@192.168.0.193
+# senha padrão: root
+
+🔹 3. Script de Diagnóstico "PiKVM Ready"
+Crie o arquivo no PiKVM:
+nano /root/pikvm_ready.sh
+
+Cole o conteúdo:
+#!/bin/bash
+echo "=== PiKVM READY CHECK ==="
+
+# 1. Rede
+ping -c 2 8.8.8.8 && echo "[OK] Internet"
+ping -c 2 192.168.0.1 && echo "[OK] Gateway"
+ping -c 2 192.168.0.193 && echo "[OK] Loopback PiKVM"
+
+# 2. Serviços
+systemctl is-active --quiet kvmd && echo "[OK] KVMD ativo" || echo "[ERRO] KVMD falhou"
+systemctl is-active --quiet kvmd-nginx && echo "[OK] Nginx ativo" || echo "[ERRO] Nginx falhou"
+
+# 3. Portas
+ss -tlnp | grep -E "80|443" || echo "[ERRO] Nginx não escutando"
+
+# 4. Streaming
+journalctl -u kvmd --no-pager -n 20 | grep "Capturing" && echo "[OK] Streaming funcionando"
+
+echo "=== FIM DO CHECK ==="
+
+
+Dar permissão:
+chmod +x /root/pikvm_ready.sh
+/root/pikvm_ready.sh
+
+🔹 4. Acesso pelo Navegador
+Abra:
+https://192.168.0.193
+
+Login padrão:
+admin / admin
+
+
+🔹 5. Instalar e Configurar Tailscale no PiKVM
+No PiKVM (como root):
+curl -fsSL https://tailscale.com/install.sh | sh
+tailscale up --authkey=COLOQUE_SEU_AUTH_KEY --hostname pikvm1
+
+⚠️ Pegue a chave (AUTH_KEY) no painel:
+👉 https://login.tailscale.com/admin/settings/keys
+Teste o IP do PiKVM pelo Tailscale:
+
+tailscale ip -4
+
+🔹 6. Oracle Cloud – Instância Ubuntu
+    1. Crie instância Ubuntu (1 OCPU, 1GB RAM já serve).
+    2. Acesse via SSH:
+ssh ubuntu@SEU_IP_PUBLICO
+sudo -i
+
+Atualize:
+apt update && apt upgrade -y
+
+
+🔹 7. Instalar Docker no Oracle
+apt install -y ca-certificates curl gnupg lsb-release
+mkdir -m 0755 -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+apt update
+apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+systemctl enable --now docker
+
+
+Teste:
+
+docker run hello-world
+
+
+🔹 8. Instalar Tailscale no Oracle
+
+curl -fsSL https://tailscale.com/install.sh | sh
+tailscale up --authkey=COLOQUE_SEU_AUTH_KEY --hostname oracle-server
+
+
+🔹 9. Dockerfile do Seu Site (Login + Integração)
+No Oracle Cloud:
+
+mkdir /opt/superducks
+cd /opt/superducks
+nano Dockerfile
+
+Conteúdo:
+FROM nginx:alpine
+
+# Copia arquivos do site
+COPY ./html /usr/share/nginx/html
+
+# Expondo portas
+EXPOSE 80
+
+Criar a pasta do site:
+mkdir html
+nano html/index.html
+Exemplo simples:
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SuperDucks</title>
+</head>
+<body>
+  <h1>Bem-vindo à SuperDucks</h1>
+  <form action="/login" method="post">
+    Usuário: <input type="text" name="user"><br>
+    Senha: <input type="password" name="pass"><br>
+    <button type="submit">Entrar</button>
+  </form>
+</body>
+</html>
+
+
+Build do container:
+docker build -t superducks .
+docker run -d -p 80:80 superducks
+
+
+🔹 10. Integração – Oracle <-> PiKVM
+No servidor Oracle (via Tailscale):
+    • Crie um proxy reverso Nginx que redireciona usuários logados para o IP do PiKVM via Tailscale.
+Exemplo de config Nginx (/etc/nginx/conf.d/pikvm.conf):
+
+server {
+    listen 80;
+    server_name superducks.com.br;
+
+    location / {
+        proxy_pass http://100.110.116.21;   # IP do PiKVM no Tailscale
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+Reinicie:
+
+systemctl reload nginx
+
+
+Agora, qualquer cliente que acessar https://superducks.com.br vai cair no login do seu site e depois no PiKVM. 🚀
+
+🔹 11. Firewall Oracle
+No painel da Oracle, liberar portas:
+    • 80 (HTTP)
+    • 443 (HTTPS)
+    • 22 (SSH)
+
+🔹 12. Testes Finais
+    • Testar acesso local (https://192.168.0.193)
+    • Testar acesso via Tailscale (https://100.x.x.x)
+    • Testar acesso via Oracle Cloud (https://superducks.com.br)
+
+
+
+
+

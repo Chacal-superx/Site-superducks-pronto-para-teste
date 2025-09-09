@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Completo - PiKVM + Tailscale + Oracle Cloud</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --gray: #7f8c8d;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--secondary);
+        }
+        
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        h2 {
+            color: var(--secondary);
+            margin: 25px 0 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary);
+        }
+        
+        h3 {
+            color: var(--primary);
+            margin: 20px 0 10px;
+        }
+        
+        .progress-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .progress-step {
+            text-align: center;
+            flex: 1;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .progress-step:not(:last-child):before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            right: -50%;
+            width: 100%;
+            height: 3px;
+            background-color: var(--secondary);
+            z-index: 1;
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 35px;
+            height: 35px;
+            background-color: var(--secondary);
+            color: white;
+            border-radius: 50%;
+            line-height: 35px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .step {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--secondary);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            position: relative;
+        }
+        
+        .step-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .step-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        
+        .location {
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 10px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .location:before {
+            content: '📍';
+            margin-right: 5px;
+        }
+        
+        .command {
+            background-color: var(--dark);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            margin: 15px 0;
+            position: relative;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background-color: #219653;
+        }
+        
+        .note {
+            background-color: #fff8e1;
+            border-left: 4px solid var(--warning);
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .warning {
+            background-color: #ffebee;
+            border-left: 4px solid var(--danger);
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .success {
+            background-color: #e8f5e9;
+            border-left: 4px solid var(--success);
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .instructions {
+            background-color: #e3f2fd;
+            border-left: 4px solid var(--secondary);
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .access-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 25px 0;
+        }
+        
+        .access-card {
+            flex: 1;
+            min-width: 250px;
+            background-color: #e8f4fc;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .access-card h3 {
+            color: var(--secondary);
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--secondary);
+        }
+        
+        .code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #f1f1f1;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: var(--gray);
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .progress-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .progress-step:not(:last-child):before {
+                display: none;
+            }
+            
+            .access-info {
+                flex-direction: column;
+            }
+        }
+        
+        .toggle-btn {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            width: 100%;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .toggle-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .toggle-btn:after {
+            content: "↕";
+            font-size: 18px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Manual Completo - PiKVM + Tailscale + Oracle Cloud</h1>
+            <p>Guia passo a passo com todos os comandos necessários para configurar seu ambiente</p>
+        </header>
+
+        <div class="instructions">
+            <strong>📋 Como usar este guia:</strong> 
+            <ol>
+                <li>Siga os passos na ordem apresentada</li>
+                <li>Preste atenção onde cada comando deve ser executado</li>
+                <li>Use o botão "Copiar" para copiar os comandos</li>
+                <li>Cole no terminal apropriado (PiKVM, Instância Oracle ou seu computador)</li>
+            </ol>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ ATENÇÃO:</strong> Execute os comandos exatamente onde indicado! 
+            Alguns são para o PiKVM, outros para a Instância Oracle e outros para seu computador pessoal.
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-step">
+                <div class="step-number">1</div>
+                <div>Preparar PiKVM</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-number">2</div>
+                <div>Configurar PiKVM</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-number">3</div>
+                <div>Instância Oracle</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-number">4</div>
+                <div>Integração</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-number">5</div>
+                <div>Testes</div>
+            </div>
+        </div>
+
+        <h2>1. Preparação do PiKVM</h2>
+
+        <div class="step">
+            <div class="step-title">
+                <div class="step-icon">📦</div>
+                <h3>Baixar e Instalar a Imagem do PiKVM</h3>
+            </div>
+            <div class="location">Executar no: Seu computador pessoal</div>
+            <div class="note">
+                <strong>Passos manuais:</strong>
+                <ol>
+                    <li>Acesse <a href="https://pikvm.org/download" target="_blank">https://pikvm.org/download</a></li>
+                    <li>Baixe a imagem compatível com seu Raspberry Pi</li>
+                    <li>Use o Raspberry Pi Imager ou BalenaEtcher para gravar a imagem no cartão SD</li>
+                    <li>Insira o cartão SD no Raspberry Pi e conecte-o à rede via cabo Ethernet</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-title">
+                <div class="step-icon">🔌</div>
+                <h3>Primeiro Acesso ao PiKVM</h3>
+            </div>
+            <div class="location">Executar no: Seu computador pessoal (terminal)</div>
+            <div class="command">
+ssh root@192.168.0.193
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+            </div>
+            <div class="note">
+                Senha padrão: <span class="code">root</span><br>
+                Nota: O IP pode variar dependendo da sua rede. Verifique no roteador ou use um scanner de rede.
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-title">
+                <div class="step-icon">📜</div>
+                <h3>Criar Script de Diagnóstico</h3>
+            </div>
+            <div class="location">Executar no: PiKVM (via SSH)</div>
+            
+            <button class="toggle-btn" onclick="toggleSection('create-script')">Criar arquivo do script</button>
+            <div id="create-script" class="hidden">
+                <div class="command">
+nano /root/pikvm_ready.sh
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                <div class="note">
+                    Cole o seguinte conteúdo no arquivo (use Ctrl+Shift+V para colar no terminal):
+                </div>
+                <div class="command">
+#!/bin/bash
+echo "=== PiKVM READY CHECK ==="
+
+# 1. Rede
+ping -c 2 8.8.8.8 && echo "[OK] Internet"
+ping -c 2 192.168.0.1 && echo "[OK] Gateway"
+ping -c 2 192.168.0.193 && echo "[OK] Loopback PiKVM"
+
+# 2. Serviços
+systemctl is-active --quiet kvmd && echo "[OK] KVMD ativo" || echo "[ERRO] KVMD falhou"
+systemctl is-active --quiet kvmd-nginx && echo "[OK] Nginx ativo" || echo "[ERRO] Nginx falhou"
+
+# 3. Portas
+ss -tlnp | grep -E "80|443" || echo "[ERRO] Nginx não escutando"
+
+# 4. Streaming
+journalctl -u kvmd --no-pager -n 20 | grep "Capturing" && echo "[OK] Streaming funcionando"
+
+echo "=== FIM DO CHECK ==="
+<button class="copy-btn" onclick="copyCommand(this)">Copiar Conteúdo</button>
+                </div>
+                <div class="note">
+                    Salve com Ctrl+O e Enter, depois saia com Ctrl+X
+                </div>
+            </div>
+
+            <button class="toggle-btn" onclick="toggleSection('run-script')">Executar o script</button>
+            <div id="run-script" class="hidden">
+                <div class="command">
+chmod +x /root/pikvm_ready.sh
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                <div class="command">
+/root/pikvm_ready.sh
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-title">
+                <div class="step-icon">🌐</div>
+                <h3>Acesso Web ao PiKVM</h3>
+            </div>
+            <div class="location">Executar no: Seu navegador web</div>
+            <div class="note">
+                Abra: <span class="code">https://192.168.0.193</span><br>
+                Login padrão: <span class="code">admin / admin</span><br>
+                Lembre-se de substituir o IP pelo IP real do seu PiKVM, se necessário.
+            </div>
+        </div>
+
+        <h2>2. Configuração do PiKVM</h2>
+
+        <div class="step">
+            <div class="step-title">
+                <div class="step-icon">🔄</div>
+                <h3>Instalar Tailscale no PiKVM</h3>
+            </div>
+            <div class="location">Executar no: PiKVM (via SSH)</div>
+            <div class="command">
+curl -fsSL https://tailscale.com/install.sh | sh
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+            </div>
+            <div class="command">
+tailscale up --authkey=COLOQUE_SEU_AUTH_KEY --hostname pikvm1
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+            </div>
+            <div class="warning">
+                <strong>Importante:</strong> Substitua "COLOQUE_SEU_AUTH_KEY" por uma chave de autenticação real do Tailscale.<br>
+                Para obter uma chave, acesse: <a href="https://login.tailscale.com/admin/settings/keys" target="_blank">https://login.tailscale.com/admin/settings/keys</a>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-title">
+                <div class="step-icon">📡</div>
+                <h3>Verificar IP do Tailscale</h3>
+            </div>
+            <div class="location">Executar no: PiKVM (via SSH)</div>
+            <div class="command">
+tailscale ip -4
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+            </div>
+            <div class="success">
+                Anote este IP, pois você precisará dele mais tarde para acessar o PiKVM remotamente.
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-title">
+                <div class="step-icon">🔧</div>
+                <h3>Comandos Úteis para o PiKVM</h3>
+            </div>
+            <div class="location">Executar no: PiKVM (via SSH)</div>
+            
+            <button class="toggle-btn" onclick="toggleSection('pikvm-commands')">Ver comandos do PiKVM</button>
+            <div id="pikvm-commands" class="hidden">
+                <div class="command">
+# Ver IP do Tailscale
+tailscale ip -4
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+# Ver logs do PiKVM
+journalctl -u kvmd -n 50 --no-pager
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+# Reiniciar serviço KVM
+systemctl restart kvmd
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+# Status do PiKVM
+kvmd-status
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+# Atualizar o PiKVM
+rw
+pacman -Syu
+ro
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+# Alterar senha do PiKVM
+kvmd-htpasswd set admin
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+        </div>
+
+        <h2>3. Configuração da Instância Oracle</h2>
+
+        <div class="step">
+            <div class="step-title">
+                <div class="step-icon">☁️</div>
+                <h3>Criar Instância na Oracle Cloud</h3>
+            </div>
+            <div class="location">Executar no: Console da Oracle Cloud (navegador)</div>
+            <div class="note">
+                <strong>Passos manuais:</strong>
+                <ol>
+                    <li>Acesse o console da Oracle Cloud: <a href="https://cloud.oracle.com" target="_blank">https://cloud.oracle.com</a></li>
+                    <li>Navegue até "Compute" > "Instances"</li>
+                    <li>Clique em "Create Instance"</li>
+                    <li>Selecione Ubuntu 22.04 ou superior como imagem</li>
+                    <li>Escolha a forma "AMD" com 1 OCPU e 1GB RAM (formato sempre gratuito)</li>
+                    <li>Faça upload ou gere uma chave SSH para acesso</li>
+                    <li>Clique em "Create" e aguarde a instância ficar pronta</li>
+                </ol>
+            </div>
+            <div class="success">
+                Anote o IP público da sua instância, você precisará dele para acessar via SSH.
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-title">
+                <div class="step-icon">🔌</div>
+                <h3>Acessar a Instância Oracle</h3>
+            </div>
+            <div class="location">Executar no: Seu computador pessoal (terminal)</div>
+            <div class="command">
+ssh ubuntu@SEU_IP_PUBLICO
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+            </div>
+            <div class="note">
+                Substitua "SEU_IP_PUBLICO" pelo IP público da sua instância Oracle.
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-title">
+                <div class="step-icon">🔄</div>
+                <h3>Preparar a Instância Oracle</h3>
+            </div>
+            <div class="location">Executar na: Instância Oracle (via SSH)</div>
+            <div class="command">
+sudo -i
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+            </div>
+            <div class="command">
+apt update && apt upgrade -y
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-title">
+                <div class="step-icon">🐳</div>
+                <h3>Instalar Docker na Instância Oracle</h3>
+            </div>
+            <div class="location">Executar na: Instância Oracle (como root)</div>
+            
+            <button class="toggle-btn" onclick="toggleSection('install-docker')">Ver comandos de instalação do Docker</button>
+            <div id="install-docker" class="hidden">
+                <div class="command">
+apt install -y ca-certificates curl gnupg lsb-release
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+mkdir -m 0755 -p /etc/apt/keyrings
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+apt update
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+systemctl enable --now docker
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+docker run hello-world
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-title">
+                <div class="step-icon">📡</div>
+                <h3>Instalar Tailscale na Instância Oracle</h3>
+            </div>
+            <div class="location">Executar na: Instância Oracle (como root)</div>
+            <div class="command">
+curl -fsSL https://tailscale.com/install.sh | sh
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+            </div>
+            <div class="command">
+tailscale up --authkey=COLOQUE_SEU_AUTH_KEY --hostname oracle-server
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+            </div>
+            <div class="note">
+                <strong>Importante:</strong> Use a mesma chave de autenticação que usou no PiKVM.<br>
+                Substitua "COLOQUE_SEU_AUTH_KEY" pela sua chave real do Tailscale.
+            </div>
+        </div>
+
+        <h2>4. Integração e Site</h2>
+
+        <div class="step">
+            <div class="step-title">
+                <div class="step-icon">🐳</div>
+                <h3>Criar Site com Docker</h3>
+            </div>
+            <div class="location">Executar na: Instância Oracle (como root)</div>
+            
+            <button class="toggle-btn" onclick="toggleSection('create-site')">Ver comandos para criar o site</button>
+            <div id="create-site" class="hidden">
+                <div class="command">
+mkdir /opt/superducks
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+cd /opt/superducks
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+nano Dockerfile
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="note">
+                    Cole o seguinte conteúdo no arquivo:
+                </div>
+                
+                <div class="command">
+FROM nginx:alpine
+
+# Copia arquivos do site
+COPY ./html /usr/share/nginx/html
+
+# Expondo portas
+EXPOSE 80
+<button class="copy-btn" onclick="copyCommand(this)">Copiar Conteúdo</button>
+                </div>
+                
+                <div class="command">
+mkdir html
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+nano html/index.html
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="note">
+                    Cole o seguinte código HTML:
+                </div>
+                
+                <div class="command">
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;SuperDucks&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;Bem-vindo à SuperDucks&lt;/h1&gt;
+  &lt;form action="/login" method="post"&gt;
+    Usuário: &lt;input type="text" name="user"&gt;&lt;br&gt;
+    Senha: &lt;input type="password" name="pass"&gt;&lt;br&gt;
+    &lt;button type="submit"&gt;Entrar&lt;/button&gt;
+  &lt;/form&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+<button class="copy-btn" onclick="copyCommand(this)">Copiar Conteúdo</button>
+                </div>
+                
+                <div class="command">
+docker build -t superducks .
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+docker run -d -p 80:80 superducks
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-title">
+                <div class="step-icon">🔀</div>
+                <h3>Configurar Proxy Reverso Nginx</h3>
+            </div>
+            <div class="location">Executar na: Instância Oracle (como root)</div>
+            
+            <button class="toggle-btn" onclick="toggleSection('nginx-setup')">Ver comandos do Nginx</button>
+            <div id="nginx-setup" class="hidden">
+                <div class="command">
+apt install -y nginx
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+nano /etc/nginx/conf.d/pikvm.conf
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="note">
+                    Cole a seguinte configuração (substitua o IP pelo IP do Tailscale do PiKVM):
+                </div>
+                
+                <div class="command">
+server {
+    listen 80;
+    server_name superducks.com.br;
+
+    location / {
+        proxy_pass http://100.110.116.21;   # IP do PiKVM no Tailscale
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+<button class="copy-btn" onclick="copyCommand(this)">Copiar Conteúdo</button>
+                </div>
+                
+                <div class="command">
+systemctl reload nginx
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-title">
+                <div class="step-icon">🔧</div>
+                <h3>Comandos Úteis para Nginx</h3>
+            </div>
+            <div class="location">Executar na: Instância Oracle (como root)</div>
+            
+            <button class="toggle-btn" onclick="toggleSection('nginx-commands')">Ver comandos de gerenciamento do Nginx</button>
+            <div id="nginx-commands" class="hidden">
+                <div class="command">
+# Criar backup do Nginx
+sudo cp /etc/nginx/conf.d/pikvm.conf /etc/nginx/conf.d/pikvm.conf.bak.$(date +%F-%H%M)
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+# Rollback do Nginx
+LAST_BACKUP=$(ls -t /etc/nginx/conf.d/pikvm.conf.bak.* | head -n1)
+sudo cp "$LAST_BACKUP" /etc/nginx/conf.d/pikvm.conf
+sudo nginx -t && sudo systemctl reload nginx
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+# Status do Nginx
+sudo systemctl status nginx --no-pager
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+# Recarregar Nginx
+sudo nginx -t && sudo systemctl reload nginx
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+# Testar configuração do Nginx
+sudo nginx -t
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+# Reiniciar Nginx
+sudo systemctl restart nginx
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+# Ver configuração do Nginx
+sudo cat /etc/nginx/conf.d/pikvm.conf
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+# Editar configuração do Nginx
+sudo nano /etc/nginx/conf.d/pikvm.conf
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-title">
+                <div class="step-icon">🛡️</div>
+                <h3>Configurar Firewall na Oracle Cloud</h3>
+            </div>
+            <div class="location">Executar no: Console da Oracle Cloud (navegador)</div>
+            <div class="note">
+                <strong>Passos manuais:</strong>
+                <ol>
+                    <li>Acesse o console da Oracle Cloud</li>
+                    <li>Navegue até "Networking" > "Virtual Cloud Networks"</li>
+                    <li>Selecione sua VNC</li>
+                    <li>Clique em "Security Lists" e selecione a lista padrão</li>
+                    <li>Clique em "Add Ingress Rules"</li>
+                    <li>Adicione regras para as portas:
+                        <ul>
+                            <li>Porta 80 (HTTP)</li>
+                            <li>Porta 443 (HTTPS)</li>
+                            <li>Porta 22 (SSH)</li>
+                        </ul>
+                    </li>
+                    <li>Defina a origem como 0.0.0.0/0 para todas as portas</li>
+                    <li>Salve as regras</li>
+                </ol>
+            </div>
+        </div>
+
+        <h2>5. Testes Finais</h2>
+
+        <div class="step">
+            <div class="step-title">
+                <div class="step-icon">🧪</div>
+                <h3>Testar Acesso ao PiKVM</h3>
+            </div>
+            <div class="note">
+                <strong>Teste 1:</strong> Acesso local ao PiKVM<br>
+                Abra no navegador: <span class="code">https://192.168.0.193</span>
+            </div>
+            
+            <div class="note">
+                <strong>Teste 2:</strong> Acesso via Tailscale<br>
+                Execute no PiKVM: <span class="code">tailscale ip -4</span> para obter o IP<br>
+                Abra no navegador: <span class="code">https://[IP-DO-TAILSCALE]</span>
+            </div>
+            
+            <div class="note">
+                <strong>Teste 3:</strong> Acesso via Oracle Cloud<br>
+                Abra no navegador: <span class="code">http://[IP-PUBLICO-ORACLE]</span>
+            </div>
+            
+            <div class="success">
+                Se tudo estiver configurado corretamente, os três testes devem permitir o acesso ao PiKVM.
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-title">
+                <div class="step-icon">🔧</div>
+                <h3>Comandos de Rede Úteis</h3>
+            </div>
+            <div class="location">Executar em: Qualquer sistema Linux</div>
+            
+            <button class="toggle-btn" onclick="toggleSection('network-commands')">Ver comandos de rede</button>
+            <div id="network-commands" class="hidden">
+                <div class="command">
+# Verificar endereço IP
+ip addr show
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+# Testar conexão
+ping -c 4 google.com
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+# Reiniciar rede (no PiKVM)
+systemctl restart systemd-networkd
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+                
+                <div class="command">
+# Ver status do firewall (na Instância Oracle)
+ufw status
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+        </div>
+
+        <h2>Resumo de Acessos</h2>
+        <div class="access-info">
+            <div class="access-card">
+                <h3>Acesso ao PiKVM (Local)</h3>
+                <p><strong>SSH:</strong> <span class="code">ssh root@192.168.0.193</span></p>
+                <p><strong>Web:</strong> <span class="code">https://192.168.0.193</span></p>
+                <p><strong>Usuário/Senha:</strong> <span class="code">admin/admin</span></p>
+            </div>
+            
+            <div class="access-card">
+                <h3>Acesso à Instância Oracle</h3>
+                <p><strong>SSH:</strong> <span class="code">ssh ubuntu@[IP-PUBLICO]</span></p>
+                <p><strong>Web:</strong> <span class="code">http://[IP-PUBLICO]</span></p>
+            </div>
+            
+            <div class="access-card">
+                <h3>Acesso via Tailscale</h3>
+                <p><strong>PiKVM IP:</strong> <span class="code">[IP-TAILSCALE-PIKVM]</span></p>
+                <p><strong>Oracle IP:</strong> <span class="code">[IP-TAILSCALE-ORACLE]</span></p>
+            </div>
+        </div>
+
+        <div class="note">
+            <strong>💡 Dica:</strong> Salve este arquivo HTML no seu computador para referência futura. 
+            Você pode abri-lo a qualquer momento para copiar os comandos necessários.
+        </div>
+
+        <footer>
+            <p>Manual Completo - PiKVM + Tailscale + Oracle Cloud | Desenvolvido para facilitar sua experiência</p>
+            <p>💡 Dica: Salve este arquivo HTML no seu computador para tê-lo sempre disponível!</p>
+        </footer>
+    </div>
+
+    <script>
+        function copyCommand(button) {
+            const command = button.parentElement;
+            const textToCopy = command.textContent.replace('Copiar', '').replace('Copiar Conteúdo', '').trim();
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'Copiado!';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Erro ao copiar texto: ', err);
+                alert('Erro ao copiar texto. Por favor, copie manualmente.');
+            });
+        }
+        
+        function toggleSection(id) {
+            const section = document.getElementById(id);
+            section.classList.toggle('hidden');
+        }
+    </script>
+</body>
+</html>

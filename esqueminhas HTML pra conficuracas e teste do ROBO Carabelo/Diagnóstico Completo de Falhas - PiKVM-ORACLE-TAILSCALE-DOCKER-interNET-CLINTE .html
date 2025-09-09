@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico Completo de Falhas - PiKVM</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --info: #17a2b8;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #1a2a6c, #2c3e50);
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--secondary);
+        }
+        
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        h2 {
+            color: var(--secondary);
+            margin: 25px 0 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary);
+        }
+        
+        h3 {
+            color: var(--primary);
+            margin: 20px 0 10px;
+        }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+            transition: all 0.3s;
+        }
+        
+        .tab:hover {
+            background-color: #e9ecef;
+        }
+        
+        .tab.active {
+            background-color: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .card {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--secondary);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .card-pikvm { border-left-color: var(--secondary); }
+        .card-oracle { border-left-color: var(--info); }
+        .card-tailscale { border-left-color: #5b4ee6; }
+        .card-docker { border-left-color: #2496ed; }
+        .card-internet { border-left-color: var(--warning); }
+        .card-client { border-left-color: var(--success); }
+        
+        .command {
+            background-color: var(--dark);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            margin: 15px 0;
+            position: relative;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background-color: #219653;
+        }
+        
+        .instructions {
+            background-color: #e3f2fd;
+            border-left: 4px solid var(--secondary);
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .note {
+            background-color: #fff8e1;
+            border-left: 4px solid var(--warning);
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .warning {
+            background-color: #ffebee;
+            border-left: 4px solid var(--danger);
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .success {
+            background-color: #e8f5e9;
+            border-left: 4px solid var(--success);
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin: 15px 0;
+        }
+        
+        .step-number {
+            background-color: var(--secondary);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .connection-test {
+            background-color: #e8f4fc;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .test-item {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 3px solid var(--info);
+            background-color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .tab {
+                padding: 8px 12px;
+                font-size: 14px;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔧 Diagnóstico Completo de Falhas - PiKVM</h1>
+            <p>Ferramenta para diagnosticar problemas em todos os componentes do sistema</p>
+        </header>
+
+        <div class="instructions">
+            <strong>🎯 Objetivo:</strong> Diagnosticar problemas específicos em cada componente do sistema<br>
+            <strong>⚠️ Atenção:</strong> Comandos de diagnóstico apenas - não alteram configurações
+        </div>
+
+        <div class="tab-container">
+            <div class="tab active" onclick="switchTab('pikvm')">PiKVM</div>
+            <div class="tab" onclick="switchTab('oracle')">Instância Oracle</div>
+            <div class="tab" onclick="switchTab('tailscale')">Tailscale</div>
+            <div class="tab" onclick="switchTab('docker')">Docker</div>
+            <div class="tab" onclick="switchTab('internet')">Internet</div>
+            <div class="tab" onclick="switchTab('client')">PC do Cliente</div>
+        </div>
+
+        <!-- ABA PiKVM -->
+        <div id="pikvm" class="tab-content active">
+            <h2>🖥️ Diagnóstico do PiKVM</h2>
+            
+            <div class="card card-pikvm">
+                <h3>1. Conexão com o PiKVM</h3>
+                <div class="command">
+# Conectar via SSH (substitua pelo IP do seu PiKVM)
+ssh root@192.168.0.193
+# Senha: (sua senha do PiKVM)
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+            
+            <div class="card card-pikvm">
+                <h3>2. Verificar Serviços Principais</h3>
+                <div class="command">
+# Status de todos os serviços do PiKVM
+systemctl status kvmd --no-pager -l
+systemctl status kvmd-otg --no-pager -l 2>/dev/null || echo "Serviço OTG não encontrado"
+systemctl status tailscaled --no-pager -l
+
+# Verificar se serviços estão ativos
+systemctl is-active kvmd && echo "✅ KVMD ativo" || echo "❌ KVMD inativo"
+systemctl is-active tailscaled && echo "✅ Tailscale ativo" || echo "❌ Tailscale inativo"
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+            
+            <div class="card card-pikvm">
+                <h3>3. Verificar Hardware e Dispositivos</h3>
+                <div class="command">
+# Verificar dispositivos USB
+lsusb
+ls -la /dev/video*
+ls -la /dev/hid*
+
+# Verificar temperatura e hardware
+vcgencmd measure_temp
+vcgencmd get_throttled
+
+# Verificar uso de recursos
+top -bn1 | head -10
+free -h
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+            
+            <div class="card card-pikvm">
+                <h3>4. Logs e Debug</h3>
+                <div class="command">
+# Verificar logs em tempo real
+journalctl -u kvmd -n 20 --no-pager
+journalctl -u kvmd-otg -n 10 --no-pager 2>/dev/null || echo "Logs OTG não disponíveis"
+
+# Verificar erros recentes
+dmesg | tail -20
+journalctl --since "10 minutes ago" | grep -i error
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+            
+            <div class="card card-pikvm">
+                <h3>5. Rede Local</h3>
+                <div class="command">
+# Verificar conexão local
+ip addr show
+ping -c 4 192.168.0.1  # Substitua pelo IP do seu roteador
+
+# Verificar portas abertas
+netstat -tlnp | grep -E "(80|443|8080)"
+ss -tuln | grep -E "(80|443|8080)"
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA Instância Oracle -->
+        <div id="oracle" class="tab-content">
+            <h2>☁️ Diagnóstico da Instância Oracle</h2>
+            
+            <div class="card card-oracle">
+                <h3>1. Conexão com a Instância</h3>
+                <div class="command">
+# Conectar via SSH (use sua chave e IP)
+ssh -i chave_privada.pem ubuntu@167.234.242.22
+# Substitua "chave_privada.pem" pelo caminho correto
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+            
+            <div class="card card-oracle">
+                <h3>2. Verificar Serviços Nginx</h3>
+                <div class="command">
+# Status do Nginx
+systemctl status nginx --no-pager -l
+nginx -t
+
+# Verificar configuração
+cat /etc/nginx/conf.d/pikvm.conf | head -20
+
+# Reiniciar se necessário
+sudo systemctl restart nginx
+sudo nginx -s reload
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+            
+            <div class="card card-oracle">
+                <h3>3. Verificar Conexões</h3>
+                <div class="command">
+# Verificar portas abertas
+netstat -tlnp
+ss -tuln
+
+# Verificar conexões ativas
+netstat -tn | grep ESTABLISHED | head -10
+
+# Testar firewall
+sudo ufw status verbose
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+            
+            <div class="card card-oracle">
+                <h3>4. Monitoramento de Recursos</h3>
+                <div class="command">
+# Uso de CPU e Memória
+top -bn1 | head -10
+free -h
+df -h
+
+# Uso de rede
+iftop -n -P  # Se estiver instalado
+nload        # Se estiver instalado
+
+# Logs do Nginx
+tail -20 /var/log/nginx/access.log
+tail -20 /var/log/nginx/error.log
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA Tailscale -->
+        <div id="tailscale" class="tab-content">
+            <h2>🔗 Diagnóstico do Tailscale</h2>
+            
+            <div class="card card-tailscale">
+                <h3>1. Status do Tailscale (PiKVM)</h3>
+                <div class="command">
+# Verificar status geral
+tailscale status
+tailscale netcheck
+
+# Verificar IP do Tailscale
+tailscale ip
+
+# Verificar rotas
+tailscale status --json | grep -E "(addrs|routes)"
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+            
+            <div class="card card-tailscale">
+                <h3>2. Testes de Conexão</h3>
+                <div class="command">
+# Testar ping para outros dispositivos Tailscale
+# Substitua pelos IPs Tailscale dos outros dispositivos
+tailscale ping 100.xx.xx.xx  # IP Tailscale do cliente
+tailscale ping 100.yy.yy.yy  # IP Tailscale da Oracle
+
+# Testar velocidade
+tailscale ping --time 10s --c 5 100.xx.xx.xx
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+            
+            <div class="card card-tailscale">
+                <h3>3. Logs e Debug</h3>
+                <div class="command">
+# Verificar logs do Tailscale
+journalctl -u tailscaled -n 20 --no-pager
+
+# Debug avançado
+tailscale debug --profile
+tailscale bugreport
+
+# Reiniciar serviço
+sudo systemctl restart tailscaled
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+            
+            <div class="card card-tailscale">
+                <h3>4. Verificar em Outros Dispositivos</h3>
+                <div class="command">
+# Na Instância Oracle:
+tailscale status
+tailscale ping 100.xx.xx.xx  # IP Tailscale do PiKVM
+
+# No PC do Cliente (se tiver Tailscale):
+tailscale status
+tailscale ping 100.yy.yy.yy  # IP Tailscale da Oracle
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA Docker -->
+        <div id="docker" class="tab-content">
+            <h2>🐳 Diagnóstico do Docker (Oracle)</h2>
+            
+            <div class="card card-docker">
+                <h3>1. Status dos Containers</h3>
+                <div class="command">
+# Verificar containers em execução
+docker ps
+docker ps -a  # Todos os containers
+
+# Verificar logs dos containers
+docker logs NOME_DO_CONTAINER  # Substitua pelo nome real
+
+# Verificar uso de recursos
+docker stats --no-stream
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+            
+            <div class="card card-docker">
+                <h3>2. Verificar Imagens e Volumes</h3>
+                <div class="command">
+# Verificar imagens Docker
+docker images
+
+# Verificar volumes
+docker volume ls
+
+# Verificar redes Docker
+docker network ls
+
+# Verificar informações do sistema
+docker system df
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+            
+            <div class="card card-docker">
+                <h3>3. Logs e Monitoramento</h3>
+                <div class="command">
+# Verificar logs em tempo real
+docker logs -f NOME_DO_CONTAINER
+
+# Verificar processos dentro do container
+docker top NOME_DO_CONTAINER
+
+# Inspecionar container
+docker inspect NOME_DO_CONTAINER | head -20
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+            
+            <div class="card card-docker">
+                <h3>4. Gerenciamento Básico</h3>
+                <div class="command">
+# Reiniciar container
+docker restart NOME_DO_CONTAINER
+
+# Parar/iniciar container
+docker stop NOME_DO_CONTAINER
+docker start NOME_DO_CONTAINER
+
+# Verificar versão do Docker
+docker --version
+docker-compose --version
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA Internet -->
+        <div id="internet" class="tab-content">
+            <h2>🌐 Diagnóstico de Internet</h2>
+            
+            <div class="card card-internet">
+                <h3>1. Testes de Conexão Internet</h3>
+                <div class="command">
+# Testar conectividade básica
+ping -c 4 8.8.8.8
+ping -c 4 google.com
+
+# Testar DNS
+nslookup google.com
+dig google.com
+
+# Testar velocidade (se speedtest-cli estiver instalado)
+speedtest-cli --simple
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+            
+            <div class="card card-internet">
+                <h3>2. Testes em Todos os Pontos</h3>
+                <div class="note">
+                    <strong>Execute em cada dispositivo:</strong> PiKVM, Oracle e Cliente
+                </div>
+                <div class="command">
+# Teste básico de internet
+curl -I https://google.com --connect-timeout 5
+wget -q --spider https://google.com && echo "Online" || echo "Offline"
+
+# Verificar MTU e problemas de pacotes
+ping -c 4 -s 1472 8.8.8.8  # Teste com pacotes grandes
+ping -c 4 -s 1500 8.8.8.8  # Teste limite MTU
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+            
+            <div class="card card-internet">
+                <h3>3. Diagnóstico de Rede</h3>
+                <div class="command">
+# Verificar rota até internet
+traceroute 8.8.8.8
+tracepath 8.8.8.8
+
+# Testar portas específicas
+nc -zv google.com 443
+nc -zv 8.8.8.8 53
+
+# Verificar configuração DNS
+cat /etc/resolv.conf
+systemd-resolve --status | grep "DNS Servers"
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA PC do Cliente -->
+        <div id="client" class="tab-content">
+            <h2>💻 Diagnóstico do PC do Cliente (Acesso Remoto)</h2>
+            
+            <div class="card card-client">
+                <h3>1. Testes Sem Instalação (CMD/PowerShell)</h3>
+                <div class="command">
+# Testar conectividade com a Oracle
+ping 167.234.242.22
+ping seu-dominio.com  # Substitua pelo seu domínio
+
+# Testar portas (Windows PowerShell)
+Test-NetConnection 167.234.242.22 -Port 80
+Test-NetConnection 167.234.242.22 -Port 443
+
+# Verificar rota
+tracert 167.234.242.22
+
+# Testar DNS
+nslookup seu-dominio.com
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+            
+            <div class="card card-client">
+                <h3>2. Testes no Navegador</h3>
+                <div class="note">
+                    <strong>Execute no navegador do cliente:</strong>
+                </div>
+                <div class="command">
+// Testar acesso à interface web
+// Abra no navegador: https://seu-dominio.com/
+
+// Testar WebSocket (Console do Navegador F12)
+let ws = new WebSocket('wss://seu-dominio.com/ws');
+ws.onopen = () => console.log('WebSocket conectado');
+ws.onerror = (e) => console.log('WebSocket erro:', e);
+
+// Testar latência via JavaScript
+let start = Date.now();
+fetch('https://seu-dominio.com/api/auth/check')
+  .then(() => console.log('Latência:', Date.now() - start, 'ms'))
+  .catch(e => console.log('Erro:', e));
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+            
+            <div class="card card-client">
+                <h3>3. Diagnóstico de Rede Windows</h3>
+                <div class="command">
+# Verificar configuração IP (CMD)
+ipconfig /all
+
+# Liberar e renovar IP
+ipconfig /release
+ipconfig /renew
+
+# Limpar cache DNS
+ipconfig /flushdns
+
+# Verificar firewall
+netsh advfirewall show allprofiles state
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+            
+            <div class="card card-client">
+                <h3>4. Testes Avançados (Se Permitido)</h3>
+                <div class="note">
+                    <strong>Apenas se tiver acesso administrativo:</strong>
+                </div>
+                <div class="command">
+# Testar com curl (se disponível no Windows)
+curl -I https://seu-dominio.com
+curl -v https://seu-dominio.com
+
+# Testar portas com telnet (se habilitado)
+telnet 167.234.242.22 80
+telnet 167.234.242.22 443
+
+# Verificar hosts file
+type C:\Windows\System32\drivers\etc\hosts
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+        </div>
+
+        <footer style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #666;">
+            <p>Diagnóstico Completo de Falhas - PiKVM | Ferramenta de troubleshooting</p>
+            <p>🔧 Use estas abas para diagnosticar problemas específicos em cada componente</p>
+        </footer>
+    </div>
+
+    <script>
+        function copyCommand(button) {
+            const command = button.parentElement;
+            const textToCopy = command.textContent.replace('Copiar', '').trim();
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'Copiado!';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Erro ao copiar texto: ', err);
+                alert('Erro ao copiar texto. Por favor, copie manualmente.');
+            });
+        }
+        
+        function switchTab(tabName) {
+            // Esconder todas as tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Mostrar a tab selecionada
+            document.getElementById(tabName).classList.add('active');
+            
+            // Atualizar a tab ativa
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+</body>
+</html>

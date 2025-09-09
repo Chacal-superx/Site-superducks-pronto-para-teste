@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico de Conexão - PiKVM</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #1a2a6c, #2c3e50);
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--secondary);
+        }
+        
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        h2 {
+            color: var(--secondary);
+            margin: 25px 0 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary);
+        }
+        
+        h3 {
+            color: var(--primary);
+            margin: 20px 0 10px;
+        }
+        
+        .card {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--secondary);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .command {
+            background-color: var(--dark);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            margin: 15px 0;
+            position: relative;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background-color: #219653;
+        }
+        
+        .instructions {
+            background-color: #e3f2fd;
+            border-left: 4px solid var(--secondary);
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .note {
+            background-color: #fff8e1;
+            border-left: 4px solid var(--warning);
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .warning {
+            background-color: #ffebee;
+            border-left: 4px solid var(--danger);
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .success {
+            background-color: #e8f5e9;
+            border-left: 4px solid var(--success);
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin: 15px 0;
+        }
+        
+        .step-number {
+            background-color: var(--secondary);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .interpretation {
+            background-color: #e8f4fc;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .interpretation-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        
+        .status-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        
+        .good { background-color: var(--success); }
+        .warning { background-color: var(--warning); }
+        .bad { background-color: var(--danger); }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Diagnóstico de Conexão - PiKVM</h1>
+            <p>Ferramenta para verificar latência e qualidade da conexão</p>
+        </header>
+
+        <div class="instructions">
+            <strong>🎯 Objetivo:</strong> Verificar a qualidade da conexão entre seu computador, PiKVM e servidor Oracle<br>
+            <strong>⚠️ Atenção:</strong> Estes comandos são apenas para diagnóstico e não alteram configurações
+        </div>
+
+        <h2>🔌 Conexões Necessárias</h2>
+        
+        <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h3>Conexão com o PiKVM (Local)</h3>
+                <div class="command">
+ssh root@192.168.0.193
+# Senha: (sua senha do PiKVM)
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h3>Conexão com Instância Oracle (Cloud)</h3>
+                <div class="command">
+ssh -i chave_privada.pem ubuntu@167.234.242.22
+# Substitua "chave_privada.pem" pelo caminho da sua chave
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+                </div>
+            </div>
+        </div>
+
+        <h2>📈 Testes de Latência</h2>
+        
+        <div class="card">
+            <h3>Teste 1: PiKVM → Computador do Cliente</h3>
+            <div class="note">
+                <strong>Execute no PiKVM:</strong> Substitua IP_DO_CLIENTE pelo IP real do computador que você controla
+            </div>
+            <div class="command">
+# Teste básico de ping
+ping -c 10 IP_DO_CLIENTE | grep -E "(min/avg/max|packet loss)"
+
+# Teste avançado com iperf3 (precisa instalar no cliente)
+# No cliente execute primeiro: iperf3 -s
+# Depois no PiKVM:
+iperf3 -c IP_DO_CLIENTE -t 10 -P 5 | grep -E "(sender|receiver)"
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>Teste 2: Instância Oracle → PiKVM</h3>
+            <div class="note">
+                <strong>Execute na Instância Oracle:</strong> Substitua IP_TAILSCALE_PIKVM pelo IP do Tailscale do PiKVM
+            </div>
+            <div class="command">
+# Teste de ping para o PiKVM
+ping -c 10 IP_TAILSCALE_PIKVM | grep -E "(min/avg/max|packet loss)"
+
+# Teste de velocidade
+iperf3 -c IP_TAILSCALE_PIKVM -t 10 -P 5 | grep -E "(sender|receiver)"
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>Teste 3: Instância Oracle → Cliente</h3>
+            <div class="note">
+                <strong>Execute na Instância Oracle:</strong> Substitua IP_DO_CLIENTE pelo IP real
+            </div>
+            <div class="command">
+ping -c 10 IP_DO_CLIENTE | grep -E "(min/avg/max|packet loss)"
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+            </div>
+        </div>
+
+        <h2>📊 Monitoramento do PiKVM</h2>
+        
+        <div class="card">
+            <h3>Performance do Streaming</h3>
+            <div class="command">
+# Verificar status do streamer (execute no PiKVM)
+journalctl -u kvmd -n 5 | grep -E "(fps|delay|ms)" | tail -5
+
+# Verificar uso de recursos
+top -bn1 | head -10
+echo "🌡️  Temperatura: $(vcgencmd measure_temp)"
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>Status da Rede</h3>
+            <div class="command">
+# Verificar conexão Tailscale (execute no PiKVM)
+tailscale status
+tailscale ping IP_DO_CLIENTE
+
+# Verificar conexões de rede
+netstat -tlnp | grep ":80\|:443"
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+            </div>
+        </div>
+
+        <h2>🎯 Diagnóstico Completo</h2>
+        
+        <div class="card">
+            <h3>Script de Diagnóstico Automático</h3>
+            <div class="note">
+                <strong>Execute no PiKVM:</strong> Este script faz todos os testes automaticamente
+            </div>
+            <div class="command">
+#!/bin/bash
+echo "🔍 DIAGNÓSTICO COMPLETO DE CONEXÃO:"
+echo "==================================="
+
+# Teste de ping para cliente (substitua o IP)
+echo "📈 Ping para cliente:"
+ping -c 4 IP_DO_CLIENTE | tail -2
+
+# Teste de ping para Oracle
+echo "📈 Ping para Oracle:"
+ping -c 4 167.234.242.22 | tail -2
+
+# Performance local
+echo "🎬 Status Streamer:"
+journalctl -u kvmd -n 3 | grep -E "(fps|delay)" | tail -3
+
+# Recursos sistema
+echo "📊 Uso CPU/Memória:"
+free -h | head -2
+echo "CPU: $(top -bn1 | grep "Cpu(s)" | awk '{print $2}')%"
+
+# Temperatura
+echo "🌡️  Temperatura: $(vcgencmd measure_temp | cut -d= -f2)"
+
+echo "==================================="
+<button class="copy-btn" onclick="copyCommand(this)">Copiar</button>
+            </div>
+        </div>
+
+        <h2>📋 Interpretação dos Resultados</h2>
+        
+        <div class="interpretation">
+            <h3>Latência (Ping)</h3>
+            <div class="interpretation-item">
+                <div class="status-icon good"></div>
+                <div><strong>✅ < 50ms:</strong> Ótimo - quase imperceptível</div>
+            </div>
+            <div class="interpretation-item">
+                <div class="status-icon good"></div>
+                <div><strong>✅ 50-100ms:</strong> Bom - jogável</div>
+            </div>
+            <div class="interpretation-item">
+                <div class="status-icon warning"></div>
+                <div><strong>⚠️ 100-200ms:</strong> Aceitável para KVM</div>
+            </div>
+            <div class="interpretation-item">
+                <div class="status-icon bad"></div>
+                <div><strong>❌ > 200ms:</strong> Problemático - delay perceptível</div>
+            </div>
+            
+            <h3>Largura de Banda</h3>
+            <div class="interpretation-item">
+                <div class="status-icon good"></div>
+                <div><strong>✅ > 5 Mbps:</strong> Excelente para 1080p</div>
+            </div>
+            <div class="interpretation-item">
+                <div class="status-icon good"></div>
+                <div><strong>✅ 2-5 Mbps:</strong> Bom para 720p</div>
+            </div>
+            <div class="interpretation-item">
+                <div class="status-icon warning"></div>
+                <div><strong>⚠️ 1-2 Mbps:</strong> Mínimo para 480p</div>
+            </div>
+            <div class="interpretation-item">
+                <div class="status-icon bad"></div>
+                <div><strong>❌ < 1 Mbps:</strong> Insuficiente</div>
+            </div>
+            
+            <h3>Perda de Pacotes</h3>
+            <div class="interpretation-item">
+                <div class="status-icon good"></div>
+                <div><strong>✅ 0%:</strong> Conexão estável</div>
+            </div>
+            <div class="interpretation-item">
+                <div class="status-icon warning"></div>
+                <div><strong>⚠️ 1-5%:</strong> Pequena instabilidade</div>
+            </div>
+            <div class="interpretation-item">
+                <div class="status-icon bad"></div>
+                <div><strong>❌ > 5%:</strong> Conexão problemática</div>
+            </div>
+        </div>
+
+        <div class="warning">
+            <strong>💡 Dica:</strong> Para testes com iperf3, instale primeiro no cliente com: <code>sudo apt install iperf3</code><br>
+            <strong>🔧 Nota:</strong> Execute <code>iperf3 -s</code> no cliente antes de testar do PiKVM
+        </div>
+
+        <footer style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #666;">
+            <p>Diagnóstico de Conexão - PiKVM | Ferramenta de análise de latência e performance</p>
+            <p>📊 Use estes comandos para monitorar a qualidade da sua conexão remota</p>
+        </footer>
+    </div>
+
+    <script>
+        function copyCommand(button) {
+            const command = button.parentElement;
+            const textToCopy = command.textContent.replace('Copiar', '').trim();
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'Copiado!';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Erro ao copiar texto: ', err);
+                alert('Erro ao copiar texto. Por favor, copie manualmente.');
+            });
+        }
+    </script>
+</body>
+</html>
