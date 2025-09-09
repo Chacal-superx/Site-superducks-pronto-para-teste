@@ -1170,4 +1170,9 @@ logger = logging.getLogger(__name__)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    # Cleanup streaming resources
+    await video_stream_manager.cleanup()
+    # Cleanup hardware connections
+    await pikvm_hardware_manager.cleanup()
+    # Close database connection
     client.close()
