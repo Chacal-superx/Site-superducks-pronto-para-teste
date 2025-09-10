@@ -131,12 +131,17 @@ async def root():
 @api_router.post("/auth/login", response_model=Token)
 async def login(user_credentials: UserLogin, request: Request):
     """Login user and return JWT token"""
+    logger.info(f"Login attempt for username: {user_credentials.username}")
+    
     user = await authenticate_user(user_credentials.username, user_credentials.password)
     if not user:
+        logger.warning(f"Authentication failed for username: {user_credentials.username}")
         raise HTTPException(
             status_code=401,
             detail="Incorrect username or password"
         )
+    
+    logger.info(f"Authentication successful for username: {user_credentials.username}")
     
     # Update last login
     await db.users.update_one(
