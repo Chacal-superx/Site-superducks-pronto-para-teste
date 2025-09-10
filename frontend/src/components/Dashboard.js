@@ -532,6 +532,24 @@ const Dashboard = ({ user, token, onLogout }) => {
                   </div>
                 </div>
               )}
+
+              {activeTab === 'hardware' && (
+                <HardwareManager user={user} />
+              )}
+
+              {activeTab === 'streaming' && selectedDevice && (
+                <VideoStreaming 
+                  deviceId={selectedDevice.id} 
+                  deviceName={selectedDevice.name} 
+                />
+              )}
+
+              {activeTab === 'streaming' && !selectedDevice && (
+                <div className="text-center py-8">
+                  <Play className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                  <p className="text-gray-600">Select a device to start video streaming</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
