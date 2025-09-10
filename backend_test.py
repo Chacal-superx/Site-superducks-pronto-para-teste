@@ -43,6 +43,44 @@ class PiKVMAPITester:
         if not success and response_data:
             print(f"   Response: {response_data}")
     
+    def test_health_check(self):
+        """Test health check endpoint"""
+        try:
+            response = self.session.get(f"{self.base_url}/health")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("status") == "healthy":
+                    self.log_test("Health Check", True, "API is healthy", data)
+                    return True
+                else:
+                    self.log_test("Health Check", False, f"Unhealthy status: {data.get('status')}", data)
+                    return False
+            else:
+                self.log_test("Health Check", False, f"HTTP {response.status_code}", response.text)
+                return False
+        except Exception as e:
+            self.log_test("Health Check", False, f"Connection error: {str(e)}")
+            return False
+    
+    def test_root_endpoint(self):
+        """Test root API endpoint"""
+        try:
+            response = self.session.get(f"{self.base_url}/")
+            if response.status_code == 200:
+                data = response.json()
+                if "Super Ducks Enterprise Manager API" in data.get("message", ""):
+                    self.log_test("Root Endpoint", True, "Root endpoint accessible", data)
+                    return True
+                else:
+                    self.log_test("Root Endpoint", False, "Unexpected response format", data)
+                    return False
+            else:
+                self.log_test("Root Endpoint", False, f"HTTP {response.status_code}", response.text)
+                return False
+        except Exception as e:
+            self.log_test("Root Endpoint", False, f"Error: {str(e)}")
+            return False
+
     def test_authentication_system(self):
         """Test NEW authentication system with admin/admin123"""
         try:
