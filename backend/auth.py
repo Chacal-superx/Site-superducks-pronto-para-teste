@@ -109,13 +109,27 @@ async def get_user_by_id(user_id: str) -> Optional[dict]:
     return user
 
 async def authenticate_user(username: str, password: str) -> Optional[dict]:
+    print(f"DEBUG: Authenticating user: {username}")
     user = await get_user_by_username(username)
+    print(f"DEBUG: User found: {user is not None}")
+    
     if not user:
+        print("DEBUG: User not found")
         return None
-    if not verify_password(password, user["password_hash"]):
+        
+    print(f"DEBUG: Verifying password for user: {username}")
+    password_valid = verify_password(password, user["password_hash"])
+    print(f"DEBUG: Password valid: {password_valid}")
+    
+    if not password_valid:
+        print("DEBUG: Password invalid")
         return None
+        
     if not user.get("active", True):
+        print("DEBUG: User not active")
         return None
+        
+    print("DEBUG: Authentication successful")
     return user
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
