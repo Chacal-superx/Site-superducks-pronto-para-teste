@@ -25,6 +25,8 @@ class PiKVMAPITester:
         self.session.timeout = TIMEOUT
         self.test_device_id = None
         self.test_results = []
+        self.auth_token = None
+        self.authenticated_headers = {}
         
     def log_test(self, test_name, success, message, response_data=None):
         """Log test results"""
