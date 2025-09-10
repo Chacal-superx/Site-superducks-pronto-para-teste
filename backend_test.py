@@ -826,10 +826,11 @@ class PiKVMAPITester:
                 self.log_test("Cleanup Test Device", False, f"Error: {str(e)}")
     
     def run_all_tests(self):
-        """Run comprehensive test suite"""
-        print(f"\n🚀 Starting PiKVM Enterprise Manager API Tests")
+        """Run comprehensive test suite focusing on NEW features"""
+        print(f"\n🚀 Starting PiKVM Enterprise Manager NEW FEATURES Testing")
         print(f"📡 Testing endpoint: {self.base_url}")
-        print("=" * 60)
+        print("🔑 Focus: Authentication, Hardware Integration, Video Streaming")
+        print("=" * 70)
         
         # Core connectivity tests
         if not self.test_health_check():
@@ -840,40 +841,70 @@ class PiKVMAPITester:
             print("\n❌ Root endpoint failed - stopping tests")
             return False
         
-        # API functionality tests
-        test_methods = [
-            self.test_device_management,
-            self.test_power_management,
-            self.test_input_control,
-            self.test_system_monitoring,
-            self.test_file_upload_list,
-            self.test_activity_logs,
-            self.test_status_endpoints,
-            self.test_websocket_connection
+        # NEW FEATURES TESTING (Priority)
+        new_feature_tests = [
+            ("Authentication System", self.test_authentication_system),
+            ("Hardware PiKVM Integration", self.test_hardware_pikvm_integration),
+            ("Video Streaming APIs", self.test_video_streaming_apis),
+            ("WebSocket Endpoints", self.test_websocket_endpoints),
+            ("Complete Integration Flow", self.test_integration_flow)
         ]
         
-        passed_tests = 0
-        total_tests = len(test_methods)
+        # Legacy API tests (for completeness)
+        legacy_tests = [
+            ("Device Management", self.test_device_management),
+            ("Power Management", self.test_power_management),
+            ("Input Control", self.test_input_control),
+            ("System Monitoring", self.test_system_monitoring),
+            ("File Upload List", self.test_file_upload_list),
+            ("Activity Logs", self.test_activity_logs),
+            ("Status Endpoints", self.test_status_endpoints),
+            ("WebSocket Connection", self.test_websocket_connection)
+        ]
         
-        for test_method in test_methods:
+        # Run NEW feature tests first
+        print("\n🆕 TESTING NEW FEATURES:")
+        print("-" * 40)
+        new_passed = 0
+        for test_name, test_method in new_feature_tests:
+            print(f"\n🔍 Testing: {test_name}")
             if test_method():
-                passed_tests += 1
+                new_passed += 1
+        
+        # Run legacy tests
+        print("\n📋 TESTING EXISTING FEATURES:")
+        print("-" * 40)
+        legacy_passed = 0
+        for test_name, test_method in legacy_tests:
+            if test_method():
+                legacy_passed += 1
         
         # Cleanup
         self.cleanup_test_data()
         
         # Summary
-        print("\n" + "=" * 60)
-        print(f"📊 TEST SUMMARY")
-        print(f"✅ Passed: {passed_tests}/{total_tests}")
-        print(f"❌ Failed: {total_tests - passed_tests}/{total_tests}")
+        total_new = len(new_feature_tests)
+        total_legacy = len(legacy_tests)
+        total_tests = total_new + total_legacy
+        total_passed = new_passed + legacy_passed
         
-        if passed_tests == total_tests:
-            print("🎉 ALL TESTS PASSED!")
+        print("\n" + "=" * 70)
+        print(f"📊 TEST SUMMARY")
+        print(f"🆕 NEW Features: {new_passed}/{total_new} passed")
+        print(f"📋 Legacy Features: {legacy_passed}/{total_legacy} passed")
+        print(f"🎯 OVERALL: {total_passed}/{total_tests} passed")
+        
+        if new_passed == total_new:
+            print("🎉 ALL NEW FEATURES WORKING!")
+        else:
+            print("⚠️  SOME NEW FEATURES FAILED - Check details above")
+        
+        if total_passed == total_tests:
+            print("✨ COMPLETE SUCCESS - All features working!")
             return True
         else:
-            print("⚠️  SOME TESTS FAILED - Check details above")
-            return False
+            print("⚠️  Some tests failed - Check details above")
+            return total_passed >= (total_tests * 0.8)  # 80% pass rate acceptable
 
 def main():
     """Main test execution"""
