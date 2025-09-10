@@ -145,7 +145,7 @@ async def login(user_credentials: UserLogin, request: Request):
     )
     
     # Create access token
-    access_token_expires = timedelta(minutes=int(os.getenv("JWT_EXPIRE_HOURS", "24")) * 60)
+    access_token_expires = timedelta(minutes=int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")))
     access_token = create_access_token(
         data={"sub": user["username"]}, expires_delta=access_token_expires
     )
