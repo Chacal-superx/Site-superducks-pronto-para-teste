@@ -353,6 +353,22 @@ const Dashboard = ({ user, token, onLogout }) => {
                     <Settings className="h-4 w-4 mr-1" />
                     Settings
                   </Button>
+                  <Button
+                    variant={activeTab === 'hardware' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveTab('hardware')}
+                  >
+                    <Server className="h-4 w-4 mr-1" />
+                    Hardware
+                  </Button>
+                  <Button
+                    variant={activeTab === 'streaming' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveTab('streaming')}
+                  >
+                    <Play className="h-4 w-4 mr-1" />
+                    Streaming
+                  </Button>
                 </div>
               </div>
               {selectedDevice && activeTab === 'control' && (
