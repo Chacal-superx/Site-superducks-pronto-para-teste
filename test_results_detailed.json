@@ -3,10 +3,10 @@
     "test": "Health Check",
     "success": true,
     "message": "API is healthy",
-    "timestamp": "2025-09-08T23:43:36.732836",
+    "timestamp": "2025-09-10T12:48:06.752104",
     "response_data": {
       "status": "healthy",
-      "timestamp": "2025-09-08T23:43:36.729005",
+      "timestamp": "2025-09-10T12:48:06.749089",
       "database": "connected",
       "services": "running"
     }
@@ -15,193 +15,140 @@
     "test": "Root Endpoint",
     "success": true,
     "message": "Root endpoint accessible",
-    "timestamp": "2025-09-08T23:43:36.741896",
+    "timestamp": "2025-09-10T12:48:06.763248",
     "response_data": {
-      "message": "PiKVM Enterprise Manager API",
-      "version": "1.0.0"
+      "message": "Super Ducks Enterprise Manager API",
+      "version": "2.0.0",
+      "enterprise": true
     }
   },
   {
-    "test": "Create Device",
+    "test": "Authentication Login",
     "success": true,
-    "message": "Device created with ID: c02d7538-01c6-4507-8fbb-cec752d22b01",
-    "timestamp": "2025-09-08T23:43:36.793897",
+    "message": "Login successful with admin/admin123",
+    "timestamp": "2025-09-10T12:48:07.022999",
     "response_data": {
-      "id": "c02d7538-01c6-4507-8fbb-cec752d22b01",
-      "name": "Production Server 01",
-      "ip_address": "192.168.1.100",
-      "status": "unknown",
-      "last_seen": "2025-09-08T23:43:36.748299",
-      "cpu_usage": null,
-      "memory_usage": null,
-      "temperature": null
+      "token_type": "bearer",
+      "user": "admin"
     }
   },
   {
-    "test": "List Devices",
+    "test": "JWT Token Validation",
     "success": true,
-    "message": "Retrieved 2 devices",
-    "timestamp": "2025-09-08T23:43:36.808317",
+    "message": "Protected endpoint accessible with JWT",
+    "timestamp": "2025-09-10T12:48:07.036090",
     "response_data": {
-      "count": 2
+      "id": "68d7d0ba-89e6-4326-b1d6-e7159ff7107c",
+      "username": "admin",
+      "email": "admin@superducks-enterprise.local",
+      "role": "super_admin",
+      "active": true,
+      "created_at": "2025-09-10T12:40:49.994000",
+      "last_login": null
     }
   },
   {
-    "test": "Get Device",
+    "test": "Unauthorized Access Protection",
+    "success": false,
+    "message": "Should return 401, got 403",
+    "timestamp": "2025-09-10T12:48:07.043282",
+    "response_data": null
+  },
+  {
+    "test": "Add Hardware Device",
+    "success": false,
+    "message": "HTTP 500",
+    "timestamp": "2025-09-10T12:48:12.899477",
+    "response_data": "{\"detail\":\"400: Failed to connect to PiKVM device\"}"
+  },
+  {
+    "test": "Start Video Stream",
     "success": true,
-    "message": "Device retrieved successfully",
-    "timestamp": "2025-09-08T23:43:36.823459",
+    "message": "Video stream started successfully",
+    "timestamp": "2025-09-10T12:48:13.306557",
     "response_data": {
-      "id": "c02d7538-01c6-4507-8fbb-cec752d22b01",
-      "name": "Production Server 01",
-      "ip_address": "192.168.1.100",
-      "status": "unknown",
-      "last_seen": "2025-09-08T23:43:36.748000",
-      "cpu_usage": null,
-      "memory_usage": null,
-      "temperature": null
+      "success": true,
+      "stream_id": "38a1b3b7-e660-4006-b63d-2b525decf9c4_webrtc",
+      "device_id": "38a1b3b7-e660-4006-b63d-2b525decf9c4",
+      "stream_type": "webrtc",
+      "quality": "medium",
+      "stream_url": "/api/webrtc/38a1b3b7-e660-4006-b63d-2b525decf9c4",
+      "webrtc_signaling": "/api/webrtc/38a1b3b7-e660-4006-b63d-2b525decf9c4"
     }
   },
   {
-    "test": "Power Action - power_on",
+    "test": "Get Active Streams",
     "success": true,
-    "message": "Action executed: Power action 'PowerAction.POWER_ON' executed successfully",
-    "timestamp": "2025-09-08T23:43:36.838777",
+    "message": "Active streams retrieved: 0",
+    "timestamp": "2025-09-10T12:48:13.434782",
     "response_data": {
-      "message": "Power action 'PowerAction.POWER_ON' executed successfully",
-      "log_id": "2cde784e-9acc-4e79-af33-052cd8536319"
+      "active_streams": []
     }
   },
   {
-    "test": "Power Action - power_off",
+    "test": "Stop Video Stream",
     "success": true,
-    "message": "Action executed: Power action 'PowerAction.POWER_OFF' executed successfully",
-    "timestamp": "2025-09-08T23:43:37.351299",
+    "message": "Video stream stopped successfully",
+    "timestamp": "2025-09-10T12:48:13.534613",
     "response_data": {
-      "message": "Power action 'PowerAction.POWER_OFF' executed successfully",
-      "log_id": "b8dee447-b83f-414d-9037-01b314096bfc"
+      "success": true,
+      "device_id": "38a1b3b7-e660-4006-b63d-2b525decf9c4",
+      "stopped_streams": [
+        "webrtc"
+      ]
     }
   },
   {
-    "test": "Power Action - restart",
+    "test": "WebRTC WebSocket Endpoint",
     "success": true,
-    "message": "Action executed: Power action 'PowerAction.RESTART' executed successfully",
-    "timestamp": "2025-09-08T23:43:37.863083",
-    "response_data": {
-      "message": "Power action 'PowerAction.RESTART' executed successfully",
-      "log_id": "f7a59655-c023-4aa6-91c7-38311e9f6edf"
-    }
+    "message": "WebRTC signaling connection successful",
+    "timestamp": "2025-09-10T12:48:13.809094",
+    "response_data": null
   },
   {
-    "test": "Power Action - reset",
+    "test": "Video Streaming WebSocket Endpoint",
     "success": true,
-    "message": "Action executed: Power action 'PowerAction.RESET' executed successfully",
-    "timestamp": "2025-09-08T23:43:38.374198",
-    "response_data": {
-      "message": "Power action 'PowerAction.RESET' executed successfully",
-      "log_id": "5ba3c877-b65d-4384-87db-70380dc9a0eb"
-    }
+    "message": "Video streaming WebSocket connection successful",
+    "timestamp": "2025-09-10T12:48:13.874891",
+    "response_data": null
   },
   {
-    "test": "Power Action - sleep",
+    "test": "Integration Step 1",
     "success": true,
-    "message": "Action executed: Power action 'PowerAction.SLEEP' executed successfully",
-    "timestamp": "2025-09-08T23:43:38.885770",
-    "response_data": {
-      "message": "Power action 'PowerAction.SLEEP' executed successfully",
-      "log_id": "577d4585-fcd3-4714-941a-df66facbd7f0"
-    }
+    "message": "Admin login completed",
+    "timestamp": "2025-09-10T12:48:13.874931",
+    "response_data": null
   },
   {
-    "test": "Keyboard Input",
-    "success": true,
-    "message": "Keyboard input sent: Keyboard input sent successfully",
-    "timestamp": "2025-09-08T23:43:39.396435",
-    "response_data": {
-      "message": "Keyboard input sent successfully",
-      "log_id": "680ef913-a662-44aa-a7e4-1b4c3c7ad649"
-    }
+    "test": "Integration Step 2",
+    "success": false,
+    "message": "HTTP 500",
+    "timestamp": "2025-09-10T12:48:19.898008",
+    "response_data": "{\"detail\":\"400: Failed to connect to PiKVM device\"}"
   },
   {
-    "test": "Mouse Input",
+    "test": "Device Management",
     "success": true,
-    "message": "Mouse input sent: Mouse input sent successfully",
-    "timestamp": "2025-09-08T23:43:39.405422",
-    "response_data": {
-      "message": "Mouse input sent successfully",
-      "log_id": "08290a1f-5a80-4520-959b-e92da8eaee51"
-    }
+    "message": "Retrieved 0 devices",
+    "timestamp": "2025-09-10T12:48:19.909073",
+    "response_data": null
   },
   {
     "test": "System Metrics",
     "success": true,
     "message": "All metrics retrieved successfully",
-    "timestamp": "2025-09-08T23:43:40.462425",
+    "timestamp": "2025-09-10T12:48:20.935451",
     "response_data": {
-      "cpu": "1.8%",
-      "memory": "27.9%",
-      "disk": "10.0%"
+      "cpu": "21.7%",
+      "memory": "26.3%",
+      "disk": "15.0%"
     }
   },
   {
-    "test": "File Upload List",
+    "test": "Cleanup",
     "success": true,
-    "message": "File list retrieved: 0 files",
-    "timestamp": "2025-09-08T23:43:40.473218",
-    "response_data": {
-      "count": 0
-    }
-  },
-  {
-    "test": "Power Logs",
-    "success": true,
-    "message": "Power logs retrieved: 12 entries",
-    "timestamp": "2025-09-08T23:43:40.485595",
-    "response_data": {
-      "count": 12
-    }
-  },
-  {
-    "test": "Input Logs",
-    "success": true,
-    "message": "Input logs retrieved: 5 entries",
-    "timestamp": "2025-09-08T23:43:40.497122",
-    "response_data": {
-      "count": 5
-    }
-  },
-  {
-    "test": "Create Status Check",
-    "success": true,
-    "message": "Status check created successfully",
-    "timestamp": "2025-09-08T23:43:40.548396",
-    "response_data": {
-      "id": "88f4a4d7-f254-4632-8c80-26cb60f95dd6",
-      "client_name": "Enterprise Dashboard",
-      "timestamp": "2025-09-08T23:43:40.502745"
-    }
-  },
-  {
-    "test": "Get Status Checks",
-    "success": true,
-    "message": "Status checks retrieved: 3 entries",
-    "timestamp": "2025-09-08T23:43:40.558115",
-    "response_data": {
-      "count": 3
-    }
-  },
-  {
-    "test": "WebSocket Connection",
-    "success": true,
-    "message": "WebSocket heartbeat successful",
-    "timestamp": "2025-09-08T23:43:40.630782",
-    "response_data": null
-  },
-  {
-    "test": "Cleanup Test Device",
-    "success": true,
-    "message": "Test device deleted successfully",
-    "timestamp": "2025-09-08T23:43:40.640419",
+    "message": "Test cleanup completed",
+    "timestamp": "2025-09-10T12:48:20.935506",
     "response_data": null
   }
 ]
