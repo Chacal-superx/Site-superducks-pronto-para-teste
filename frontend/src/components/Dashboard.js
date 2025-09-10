@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import FileUpload from './FileUpload';
+import HardwareManager from './HardwareManager';
+import VideoStreaming from './VideoStreaming';
 import axios from 'axios';
 import { 
   Monitor, 
