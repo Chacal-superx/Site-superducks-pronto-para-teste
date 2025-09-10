@@ -40,11 +40,14 @@ class VideoStreamConfig(BaseModel):
 class WebRTCConnection(BaseModel):
     device_id: str
     client_id: str
-    websocket: WebSocket
+    # Remove websocket from the model since it's not serializable
     peer_connection: Optional[Dict] = None
     is_active: bool = False
     created_at: datetime
     last_activity: datetime
+    
+    class Config:
+        arbitrary_types_allowed = True
 
 class VideoStreamManager:
     """Manages video streaming from PiKVM devices"""
