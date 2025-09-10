@@ -33,7 +33,7 @@ const Dashboard = ({ user, token, onLogout }) => {
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [logs, setLogs] = useState([]);
-  const [activeTab, setActiveTab] = useState('control'); // 'control', 'files', 'settings'
+  const [activeTab, setActiveTab] = useState('control'); // 'control', 'files', 'settings', 'hardware', 'streaming'
 
   // Add auth headers to axios requests
   const authHeaders = {
