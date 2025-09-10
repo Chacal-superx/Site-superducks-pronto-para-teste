@@ -101,13 +101,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 async def get_user_by_username(username: str) -> Optional[dict]:
-    print(f"DEBUG: Looking for user with username: {username}")
-    print(f"DEBUG: Using database: {db.name}")
-    print(f"DEBUG: MongoDB URL: {mongo_url}")
-    
     user = await db.users.find_one({"username": username}, {"_id": 0})
-    print(f"DEBUG: Query result: {user}")
-    
     return user
 
 async def get_user_by_id(user_id: str) -> Optional[dict]:
