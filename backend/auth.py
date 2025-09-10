@@ -14,9 +14,9 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import uuid
 
 # Configuration
-SECRET_KEY = os.getenv("JWT_SECRET", "your-super-secret-key-change-in-production")
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-super-secret-key-change-in-production")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_HOURS", "24")) * 60
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
