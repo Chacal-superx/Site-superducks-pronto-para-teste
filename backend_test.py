@@ -873,6 +873,8 @@ class PiKVMAPITester:
         # NEW FEATURES TESTING (Priority)
         new_feature_tests = [
             ("Authentication System", self.test_authentication_system),
+            ("Chat System Comprehensive", self.test_chat_system_comprehensive),
+            ("Chat WebSocket Communication", self.test_chat_websocket_communication),
             ("Hardware PiKVM Integration", self.test_hardware_pikvm_integration),
             ("Video Streaming APIs", self.test_video_streaming_apis),
             ("WebSocket Endpoints", self.test_websocket_endpoints),
