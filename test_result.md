@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Adicionar funcionalidades específicas do PiKVM (controle remoto, streaming de vídeo, etc.) que estao no github repositorio PIKVM_Super-Ducks_ROBO - tu consegue verificar e fazer a juncao de tudo e deixar funcionando ?? atualmente ja tenho acesso remoto mas preciso de uma interface empresarial com para utilizar"
+user_problem_statement: "essa nosso site e baseado nesse site que ja existe mais quero fazer um melhor atravez do site de da acesso ao Pikvm e tera acesso remoto ao computador do cliente e com chat escrito e audio quero que mantenha o estilo do nosso mas agreque o que achar pertinente ao nosso projeto"
 
 backend:
   - task: "FastAPI PiKVM Enterprise Backend"
