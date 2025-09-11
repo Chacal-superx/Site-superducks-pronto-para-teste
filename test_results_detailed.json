@@ -1,9 +1,106 @@
 [
   {
     "test": "Health Check",
+    "success": true,
+    "message": "API is healthy",
+    "timestamp": "2025-09-11T14:54:30.943357",
+    "response_data": {
+      "status": "healthy",
+      "timestamp": "2025-09-11T14:54:30.940001",
+      "database": "connected",
+      "services": "running"
+    }
+  },
+  {
+    "test": "Root Endpoint",
+    "success": true,
+    "message": "Root endpoint accessible",
+    "timestamp": "2025-09-11T14:54:30.952473",
+    "response_data": {
+      "message": "Super Ducks Enterprise Manager API",
+      "version": "2.0.0",
+      "enterprise": true
+    }
+  },
+  {
+    "test": "Authentication Login",
     "success": false,
-    "message": "HTTP 503",
-    "timestamp": "2025-09-11T14:53:15.830688",
-    "response_data": "{\"detail\":\"Service unhealthy: Authentication failed., full error: {'ok': 0.0, 'errmsg': 'Authentication failed.', 'code': 18, 'codeName': 'AuthenticationFailed'}\"}"
+    "message": "HTTP 401",
+    "timestamp": "2025-09-11T14:54:30.970903",
+    "response_data": "{\"detail\":\"Incorrect username or password\"}"
+  },
+  {
+    "test": "Chat System",
+    "success": false,
+    "message": "Authentication required",
+    "timestamp": "2025-09-11T14:54:30.970963",
+    "response_data": null
+  },
+  {
+    "test": "Chat WebSocket",
+    "success": false,
+    "message": "Authentication required",
+    "timestamp": "2025-09-11T14:54:30.970973",
+    "response_data": null
+  },
+  {
+    "test": "Hardware Integration",
+    "success": false,
+    "message": "Authentication required",
+    "timestamp": "2025-09-11T14:54:30.970980",
+    "response_data": null
+  },
+  {
+    "test": "Video Streaming",
+    "success": false,
+    "message": "Authentication required",
+    "timestamp": "2025-09-11T14:54:30.970988",
+    "response_data": null
+  },
+  {
+    "test": "WebRTC WebSocket Endpoint",
+    "success": true,
+    "message": "WebRTC signaling connection successful",
+    "timestamp": "2025-09-11T14:54:31.045552",
+    "response_data": null
+  },
+  {
+    "test": "Video Streaming WebSocket Endpoint",
+    "success": true,
+    "message": "Video streaming WebSocket connection successful",
+    "timestamp": "2025-09-11T14:54:31.180758",
+    "response_data": null
+  },
+  {
+    "test": "Integration Flow",
+    "success": false,
+    "message": "Authentication required",
+    "timestamp": "2025-09-11T14:54:31.180803",
+    "response_data": null
+  },
+  {
+    "test": "Device Management",
+    "success": false,
+    "message": "Authentication required",
+    "timestamp": "2025-09-11T14:54:31.180818",
+    "response_data": null
+  },
+  {
+    "test": "System Metrics",
+    "success": true,
+    "message": "All metrics retrieved successfully",
+    "timestamp": "2025-09-11T14:54:32.216972",
+    "response_data": {
+      "cpu": "8.9%",
+      "memory": "27.4%",
+      "disk": "13.4%"
+    }
+  },
+  {
+    "test": "Cleanup",
+    "success": true,
+    "message": "Test cleanup completed",
+    "timestamp": "2025-09-11T14:54:32.217026",
+    "response_data": null
   }
 ]
