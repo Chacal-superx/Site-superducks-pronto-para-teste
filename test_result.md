@@ -525,15 +525,13 @@ metadata:
 
 test_plan:
   current_focus:
-    - "NEW Hardware Tab Implementation - COMPLETED ✅"
-    - "NEW Streaming Tab Implementation - COMPLETED ✅"
-    - "NEW 5-Tab Navigation System - COMPLETED ✅"
-    - "NEW Authentication System with JWT - COMPLETED ✅"
-    - "NEW Video Streaming APIs - COMPLETED ✅"
-    - "NEW WebSocket Endpoints for Streaming - COMPLETED ✅"
-    - "NEW Hardware PiKVM Integration APIs - READY FOR REAL HARDWARE ⚠️"
+    - "NEW Chat System - Text and Voice Chat - NEEDS TESTING ⚠️"
+    - "NEW 6-Tab Navigation System - NEEDS TESTING ⚠️" 
+    - "NEW Enhanced UI with Chat Integration - NEEDS TESTING ⚠️"
+    - "NEW Multi-User Support System - READY FOR VERIFICATION ✅"
+    - "All existing PiKVM functionality - WORKING ✅"
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
