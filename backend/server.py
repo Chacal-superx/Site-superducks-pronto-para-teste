@@ -779,6 +779,9 @@ async def get_input_logs(
 from pikvm_hardware import pikvm_hardware_manager, PiKVMDevice
 from video_streaming import video_stream_manager, VideoStreamConfig, StreamQuality, StreamType
 
+# Import chat system
+from chat_system import chat_router
+
 # PiKVM Hardware Integration Routes
 @api_router.post("/hardware/devices")
 async def add_pikvm_device(
