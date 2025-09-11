@@ -35,6 +35,10 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# Initialize auth module with database connection
+from auth import init_auth_db
+init_auth_db(client, db)
+
 # Create the main app without a prefix
 app = FastAPI(title="Super Ducks Enterprise Manager", version="2.0.0")
 
