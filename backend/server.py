@@ -10,7 +10,7 @@ import httpx
 import json
 import subprocess
 from datetime import datetime, timedelta
-from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import MongoClient
 from bson import ObjectId
 import logging
 import hashlib
@@ -40,8 +40,8 @@ app.add_middleware(
 )
 
 # MongoDB connection
-MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017/pikvm_manager")
-client = AsyncIOMotorClient(MONGO_URL)
+MONGO_URL = os.getenv("MONGO_URL", "mongodb://127.0.0.1:27017/pikvm_manager")
+client = MongoClient(MONGO_URL)
 db = client.pikvm_manager
 
 # Security
