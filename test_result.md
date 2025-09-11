@@ -270,20 +270,29 @@ backend:
         agent: "testing"
         comment: "TESTED SUCCESSFULLY: All video streaming APIs working perfectly. POST /api/streaming/start/{device_id} starts streams successfully, GET /api/streaming/active returns active streams list, POST /api/streaming/stop/{device_id} stops streams correctly. Stream configuration and quality control working as expected."
 
-  - task: "NEW WebSocket Endpoints for Streaming"
+  - task: "NEW Chat System - Text and Voice Chat"
+    implemented: true
+    working: false
+    file: "/app/backend/chat_system.py, /app/frontend/src/components/ChatSystem.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "Implemented comprehensive chat system with text messaging, voice chat, real-time WebSocket communication, chat rooms, user status, message history (30 days), message editing/deletion, typing indicators, and audio message support. Added new Chat tab to main dashboard interface."
+
+  - task: "NEW Multi-User Support System"
     implemented: true
     working: true
-    file: "/app/backend/server.py"
+    file: "/app/backend/auth.py, /app/backend/server.py"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
       - working: true
         agent: "main"
-        comment: "Implemented WebSocket endpoints for WebRTC signaling and video streaming: /api/webrtc/{device_id} and /api/stream/{device_id}"
-      - working: true
-        agent: "testing"
-        comment: "TESTED SUCCESSFULLY: Both WebSocket endpoints accessible and responding correctly. /api/webrtc/{device_id} handles WebRTC signaling, /api/stream/{device_id} manages video streaming. WebSocket connections established successfully with proper message handling."
+        comment: "Multi-user system already implemented with JWT authentication, role-based access control (super_admin, admin, operator, viewer), device permissions, and user management APIs. Users can register and login with different permission levels."
 
 frontend:
   - task: "Enterprise Dashboard Interface"
