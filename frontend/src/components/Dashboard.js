@@ -371,6 +371,14 @@ const Dashboard = ({ user, token, onLogout }) => {
                     <Play className="h-4 w-4 mr-1" />
                     Streaming
                   </Button>
+                  <Button
+                    variant={activeTab === 'chat' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveTab('chat')}
+                  >
+                    <MessageCircle className="h-4 w-4 mr-1" />
+                    Chat
+                  </Button>
                 </div>
               </div>
               {selectedDevice && activeTab === 'control' && (
