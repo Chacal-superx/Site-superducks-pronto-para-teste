@@ -10,6 +10,7 @@ import uuid
 import time
 import asyncio
 import websockets
+import io
 from datetime import datetime
 import os
 from pathlib import Path
