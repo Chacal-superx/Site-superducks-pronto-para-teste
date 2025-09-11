@@ -145,7 +145,7 @@ async def check_pikvm_service(ip: str) -> Dict[str, Any]:
 async def root():
     return {"message": "PiKVM Manager API", "version": "1.0.0"}
 
-@app.get("/api/robots", response_model=List[PiKVMRobot])
+@app.get("/api/robots")
 def get_robots():
     """Get all registered robots"""
     robots = list(db.robots.find())
