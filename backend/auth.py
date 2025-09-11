@@ -22,10 +22,16 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
-# Database connection
-mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ.get('DB_NAME', 'test_database')]
+# Database connection - will be set by server.py
+mongo_url = None
+client = None
+db = None
+
+def init_auth_db(mongo_client, database):
+    """Initialize auth module with database connection from server"""
+    global client, db
+    client = mongo_client
+    db = database
 
 # Enums
 class UserRole(str, Enum):
