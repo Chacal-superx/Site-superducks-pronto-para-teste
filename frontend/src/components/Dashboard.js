@@ -560,6 +560,12 @@ const Dashboard = ({ user, token, onLogout }) => {
                   <p className="text-gray-600">Select a device to start video streaming</p>
                 </div>
               )}
+
+              {activeTab === 'chat' && (
+                <div className="h-96">
+                  <ChatSystem user={user} token={token} />
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
