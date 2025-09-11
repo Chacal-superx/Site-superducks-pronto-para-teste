@@ -520,8 +520,8 @@ async def delete_message(
 # Audio Message Routes
 @chat_router.post("/messages/audio")
 async def send_audio_message(
-    room_id: str,
     audio_file: UploadFile = File(...),
+    room_id: str = None,
     duration: float = 0,
     current_user: dict = Depends(get_current_active_user)
 ):
