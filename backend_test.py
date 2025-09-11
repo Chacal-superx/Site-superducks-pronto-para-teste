@@ -713,9 +713,8 @@ class PiKVMAPITester:
             audio_headers = {k: v for k, v in self.authenticated_headers.items() if k != 'Content-Type'}
             
             response = self.session.post(
-                f"{self.base_url}/chat/messages/audio",
+                f"{self.base_url}/chat/messages/audio?room_id={test_room_id}&duration=2.5",
                 files=files,
-                data=data,
                 headers=audio_headers
             )
             
