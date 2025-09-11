@@ -109,13 +109,28 @@ async def get_user_by_id(user_id: str) -> Optional[dict]:
     return user
 
 async def authenticate_user(username: str, password: str) -> Optional[dict]:
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    logger.info(f"Authenticating user: {username}")
     user = await get_user_by_username(username)
     if not user:
+        logger.warning(f"User not found: {username}")
         return None
+    
+    logger.info(f"User found: {user['username']}, active: {user.get('active')}")
+    
     if not verify_password(password, user["password_hash"]):
+        logger.warning(f"Password verification failed for user: {username}")
         return None
+    
+    logger.info(f"Password verified for user: {username}")
+    
     if not user.get("active", True):
+        logger.warning(f"User is inactive: {username}")
         return None
+    
+    logger.info(f"Authentication successful for user: {username}")
     return user
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
