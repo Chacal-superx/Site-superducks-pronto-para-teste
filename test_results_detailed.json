@@ -3,10 +3,10 @@
     "test": "Health Check",
     "success": true,
     "message": "API is healthy",
-    "timestamp": "2025-09-11T14:54:30.943357",
+    "timestamp": "2025-09-11T14:57:06.707512",
     "response_data": {
       "status": "healthy",
-      "timestamp": "2025-09-11T14:54:30.940001",
+      "timestamp": "2025-09-11T14:57:06.704642",
       "database": "connected",
       "services": "running"
     }
@@ -15,7 +15,7 @@
     "test": "Root Endpoint",
     "success": true,
     "message": "Root endpoint accessible",
-    "timestamp": "2025-09-11T14:54:30.952473",
+    "timestamp": "2025-09-11T14:57:06.716022",
     "response_data": {
       "message": "Super Ducks Enterprise Manager API",
       "version": "2.0.0",
@@ -24,83 +24,202 @@
   },
   {
     "test": "Authentication Login",
-    "success": false,
-    "message": "HTTP 401",
-    "timestamp": "2025-09-11T14:54:30.970903",
-    "response_data": "{\"detail\":\"Incorrect username or password\"}"
+    "success": true,
+    "message": "Login successful with admin/admin123",
+    "timestamp": "2025-09-11T14:57:06.976085",
+    "response_data": {
+      "token_type": "bearer",
+      "user": "admin"
+    }
   },
   {
-    "test": "Chat System",
+    "test": "JWT Token Validation",
+    "success": true,
+    "message": "Protected endpoint accessible with JWT",
+    "timestamp": "2025-09-11T14:57:06.984791",
+    "response_data": {
+      "id": "c8cf39e4-5231-4dbb-98e5-276134bb35b0",
+      "username": "admin",
+      "email": "admin@superducks-enterprise.local",
+      "role": "super_admin",
+      "active": true,
+      "created_at": "2025-09-11T14:54:17.236000",
+      "last_login": "2025-09-11T14:57:06.970000"
+    }
+  },
+  {
+    "test": "Unauthorized Access Protection",
     "success": false,
-    "message": "Authentication required",
-    "timestamp": "2025-09-11T14:54:30.970963",
+    "message": "Should return 401, got 403",
+    "timestamp": "2025-09-11T14:57:06.992468",
     "response_data": null
   },
   {
-    "test": "Chat WebSocket",
-    "success": false,
-    "message": "Authentication required",
-    "timestamp": "2025-09-11T14:54:30.970973",
+    "test": "Create Chat Room",
+    "success": true,
+    "message": "Chat room created: Enterprise Support Chat",
+    "timestamp": "2025-09-11T14:57:07.029612",
+    "response_data": {
+      "room_id": "7196c53f-5b2a-4986-808d-f4bea5bb9ec4",
+      "participants": 1
+    }
+  },
+  {
+    "test": "List Chat Rooms",
+    "success": true,
+    "message": "Retrieved 1 chat rooms",
+    "timestamp": "2025-09-11T14:57:07.039959",
+    "response_data": {
+      "total_rooms": 1
+    }
+  },
+  {
+    "test": "Get Room Details",
+    "success": true,
+    "message": "Room details retrieved: Enterprise Support Chat",
+    "timestamp": "2025-09-11T14:57:07.050093",
     "response_data": null
   },
   {
-    "test": "Hardware Integration",
-    "success": false,
-    "message": "Authentication required",
-    "timestamp": "2025-09-11T14:54:30.970980",
+    "test": "Join Chat Room",
+    "success": true,
+    "message": "Successfully joined chat room",
+    "timestamp": "2025-09-11T14:57:07.073724",
     "response_data": null
   },
   {
-    "test": "Video Streaming",
-    "success": false,
-    "message": "Authentication required",
-    "timestamp": "2025-09-11T14:54:30.970988",
+    "test": "Send Text Message",
+    "success": true,
+    "message": "Message sent: Hello! This is a test message from the automated t...",
+    "timestamp": "2025-09-11T14:57:07.084679",
     "response_data": null
+  },
+  {
+    "test": "Get Room Messages",
+    "success": true,
+    "message": "Retrieved 2 messages (30-day limit)",
+    "timestamp": "2025-09-11T14:57:07.094374",
+    "response_data": {
+      "message_count": 2,
+      "has_more": false
+    }
+  },
+  {
+    "test": "Edit Message",
+    "success": true,
+    "message": "Message edited successfully (within 10-minute limit)",
+    "timestamp": "2025-09-11T14:57:07.105222",
+    "response_data": null
+  },
+  {
+    "test": "Send Audio Message",
+    "success": false,
+    "message": "HTTP 422",
+    "timestamp": "2025-09-11T14:57:07.114210",
+    "response_data": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"query\",\"room_id\"],\"msg\":\"Field required\",\"input\":null,\"url\":\"https://errors.pydantic.dev/2.6/v/missing\"}]}"
+  },
+  {
+    "test": "Chat WebSocket Communication",
+    "success": true,
+    "message": "Chat WebSocket ping/pong successful",
+    "timestamp": "2025-09-11T14:57:07.194224",
+    "response_data": null
+  },
+  {
+    "test": "Add Hardware Device",
+    "success": false,
+    "message": "HTTP 500",
+    "timestamp": "2025-09-11T14:57:12.683045",
+    "response_data": "{\"detail\":\"400: Failed to connect to PiKVM device\"}"
+  },
+  {
+    "test": "Start Video Stream",
+    "success": true,
+    "message": "Video stream started successfully",
+    "timestamp": "2025-09-11T14:57:12.693140",
+    "response_data": {
+      "success": true,
+      "stream_id": "547b3a61-299c-4ef5-92d9-1d88a866d2be_webrtc",
+      "device_id": "547b3a61-299c-4ef5-92d9-1d88a866d2be",
+      "stream_type": "webrtc",
+      "quality": "medium",
+      "stream_url": "/api/webrtc/547b3a61-299c-4ef5-92d9-1d88a866d2be",
+      "webrtc_signaling": "/api/webrtc/547b3a61-299c-4ef5-92d9-1d88a866d2be"
+    }
+  },
+  {
+    "test": "Get Active Streams",
+    "success": true,
+    "message": "Active streams retrieved: 0",
+    "timestamp": "2025-09-11T14:57:12.701424",
+    "response_data": {
+      "active_streams": []
+    }
+  },
+  {
+    "test": "Stop Video Stream",
+    "success": true,
+    "message": "Video stream stopped successfully",
+    "timestamp": "2025-09-11T14:57:12.711898",
+    "response_data": {
+      "success": true,
+      "device_id": "547b3a61-299c-4ef5-92d9-1d88a866d2be",
+      "stopped_streams": [
+        "webrtc"
+      ]
+    }
   },
   {
     "test": "WebRTC WebSocket Endpoint",
     "success": true,
     "message": "WebRTC signaling connection successful",
-    "timestamp": "2025-09-11T14:54:31.045552",
+    "timestamp": "2025-09-11T14:57:12.795632",
     "response_data": null
   },
   {
     "test": "Video Streaming WebSocket Endpoint",
     "success": true,
     "message": "Video streaming WebSocket connection successful",
-    "timestamp": "2025-09-11T14:54:31.180758",
+    "timestamp": "2025-09-11T14:57:12.859011",
     "response_data": null
   },
   {
-    "test": "Integration Flow",
-    "success": false,
-    "message": "Authentication required",
-    "timestamp": "2025-09-11T14:54:31.180803",
+    "test": "Integration Step 1",
+    "success": true,
+    "message": "Admin login completed",
+    "timestamp": "2025-09-11T14:57:12.859052",
     "response_data": null
+  },
+  {
+    "test": "Integration Step 2",
+    "success": false,
+    "message": "HTTP 500",
+    "timestamp": "2025-09-11T14:57:18.683253",
+    "response_data": "{\"detail\":\"400: Failed to connect to PiKVM device\"}"
   },
   {
     "test": "Device Management",
-    "success": false,
-    "message": "Authentication required",
-    "timestamp": "2025-09-11T14:54:31.180818",
+    "success": true,
+    "message": "Retrieved 0 devices",
+    "timestamp": "2025-09-11T14:57:18.692469",
     "response_data": null
   },
   {
     "test": "System Metrics",
     "success": true,
     "message": "All metrics retrieved successfully",
-    "timestamp": "2025-09-11T14:54:32.216972",
+    "timestamp": "2025-09-11T14:57:19.706174",
     "response_data": {
-      "cpu": "8.9%",
-      "memory": "27.4%",
-      "disk": "13.4%"
+      "cpu": "15.3%",
+      "memory": "27.7%",
+      "disk": "13.5%"
     }
   },
   {
     "test": "Cleanup",
     "success": true,
     "message": "Test cleanup completed",
-    "timestamp": "2025-09-11T14:54:32.217026",
+    "timestamp": "2025-09-11T14:57:19.706223",
     "response_data": null
   }
 ]
