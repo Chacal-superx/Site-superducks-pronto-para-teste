@@ -671,9 +671,15 @@ async def chat_websocket(websocket: WebSocket, token: str):
     """WebSocket endpoint for real-time chat"""
     try:
         # Verify token and get user
-        from auth import verify_token
-        payload = verify_token(token)
-        username = payload.get("sub")
+        from jose import jwt
+        from auth import SECRET_KEY, ALGORITHM
+        
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            username = payload.get("sub")
+        except Exception:
+            await websocket.close(code=1008, reason="Invalid token")
+            return
         
         if not username:
             await websocket.close(code=1008, reason="Invalid token")
