@@ -5,7 +5,7 @@ import { Button } from './ui/button';
 import FileUpload from './FileUpload';
 import HardwareManager from './HardwareManager';
 import VideoStreaming from './VideoStreaming';
-import ChatSystem from './ChatSystem';
+import SimpleChatSystem from './SimpleChatSystem';
 import axios from 'axios';
 import { 
   Monitor, 
