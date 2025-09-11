@@ -704,10 +704,6 @@ class PiKVMAPITester:
             files = {
                 'audio_file': ('test_audio.wav', io.BytesIO(dummy_audio), 'audio/wav')
             }
-            data = {
-                'room_id': test_room_id,
-                'duration': 2.5
-            }
             
             # Remove Content-Type header for multipart form data
             audio_headers = {k: v for k, v in self.authenticated_headers.items() if k != 'Content-Type'}
