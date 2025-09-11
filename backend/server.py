@@ -149,7 +149,18 @@ async def root():
 def get_robots():
     """Get all registered robots"""
     robots = list(db.robots.find())
-    return [robot_dict(robot) for robot in robots]
+    result = []
+    for robot in robots:
+        robot_copy = dict(robot)
+        robot_copy["id"] = str(robot_copy["_id"])
+        del robot_copy["_id"]
+        # Convert datetime objects to strings
+        if "created_at" in robot_copy and robot_copy["created_at"]:
+            robot_copy["created_at"] = robot_copy["created_at"].isoformat()
+        if "last_seen" in robot_copy and robot_copy["last_seen"]:
+            robot_copy["last_seen"] = robot_copy["last_seen"].isoformat()
+        result.append(robot_copy)
+    return result
 
 @app.get("/api/robots/{robot_id}", response_model=PiKVMRobot)
 def get_robot(robot_id: str):
