@@ -15,7 +15,7 @@ import os
 from pathlib import Path
 
 # Configuration
-BASE_URL = "https://progress-track-4.preview.emergentagent.com/api"
+BASE_URL = "https://pikvm-gateway.preview.emergentagent.com/api"
 TIMEOUT = 30
 
 class PiKVMAPITester:

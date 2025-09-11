@@ -87,8 +87,8 @@
 
 #### 1.1 - Sistema já está rodando em:
 ```
-Frontend: https://progress-track-4.preview.emergentagent.com
-Backend API: https://progress-track-4.preview.emergentagent.com/api
+Frontend: https://pikvm-gateway.preview.emergentagent.com
+Backend API: https://pikvm-gateway.preview.emergentagent.com/api
 ```
 
 #### 1.2 - Usuários já criados:
@@ -137,7 +137,7 @@ curl -u admin:admin http://100.102.63.36/api/info
 
 # Testar via nossa API
 curl -H "Authorization: Bearer {token}" \
-     https://progress-track-4.preview.emergentagent.com/api/devices/{device_id}/stream
+     https://pikvm-gateway.preview.emergentagent.com/api/devices/{device_id}/stream
 ```
 
 #### 3.2 - Teste de controles:
@@ -215,7 +215,7 @@ POST /api/auth/register
 
 ### 1. **Login**:
 ```
-URL: https://progress-track-4.preview.emergentagent.com
+URL: https://pikvm-gateway.preview.emergentagent.com
 User: admin
 Pass: admin123
 ```
@@ -277,12 +277,12 @@ Pass: admin123
 ### COMANDOS PARA COMEÇAR:
 ```bash
 # 1. Testar API
-curl -X POST https://progress-track-4.preview.emergentagent.com/api/auth/login \
+curl -X POST https://pikvm-gateway.preview.emergentagent.com/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username": "admin", "password": "admin123"}'
 
 # 2. Adicionar seu dispositivo (use token do passo 1)
-curl -X POST https://progress-track-4.preview.emergentagent.com/api/devices \
+curl -X POST https://pikvm-gateway.preview.emergentagent.com/api/devices \
   -H "Authorization: Bearer {seu_token}" \
   -H "Content-Type: application/json" \
   -d '{
