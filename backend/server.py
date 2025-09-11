@@ -139,24 +139,24 @@ async def root():
     return {"message": "PiKVM Manager API", "version": "1.0.0"}
 
 @app.get("/api/robots", response_model=List[PiKVMRobot])
-async def get_robots():
+def get_robots():
     """Get all registered robots"""
-    robots = await db.robots.find().to_list(1000)
+    robots = list(db.robots.find())
     return [robot_dict(robot) for robot in robots]
 
 @app.get("/api/robots/{robot_id}", response_model=PiKVMRobot)
-async def get_robot(robot_id: str):
+def get_robot(robot_id: str):
     """Get specific robot by ID"""
-    robot = await db.robots.find_one({"_id": ObjectId(robot_id)})
+    robot = db.robots.find_one({"_id": ObjectId(robot_id)})
     if not robot:
         raise HTTPException(status_code=404, detail="Robot not found")
     return robot_dict(robot)
 
 @app.post("/api/robots", response_model=PiKVMRobot)
-async def create_robot(robot: PiKVMCreate):
+def create_robot(robot: PiKVMCreate):
     """Register a new robot"""
     # Check if serial number already exists
-    existing = await db.robots.find_one({"serial_number": robot.serial_number})
+    existing = db.robots.find_one({"serial_number": robot.serial_number})
     if existing:
         raise HTTPException(status_code=400, detail="Robot with this serial number already exists")
     
@@ -173,17 +173,17 @@ async def create_robot(robot: PiKVMCreate):
         "diagnostics": {}
     }
     
-    result = await db.robots.insert_one(robot_doc)
+    result = db.robots.insert_one(robot_doc)
     robot_doc["_id"] = result.inserted_id
     
     return robot_dict(robot_doc)
 
 @app.put("/api/robots/{robot_id}", response_model=PiKVMRobot)
-async def update_robot(robot_id: str, robot_update: PiKVMUpdate):
+def update_robot(robot_id: str, robot_update: PiKVMUpdate):
     """Update robot information"""
     update_data = {k: v for k, v in robot_update.dict().items() if v is not None}
     
-    result = await db.robots.update_one(
+    result = db.robots.update_one(
         {"_id": ObjectId(robot_id)},
         {"$set": update_data}
     )
@@ -191,13 +191,13 @@ async def update_robot(robot_id: str, robot_update: PiKVMUpdate):
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Robot not found")
     
-    robot = await db.robots.find_one({"_id": ObjectId(robot_id)})
+    robot = db.robots.find_one({"_id": ObjectId(robot_id)})
     return robot_dict(robot)
 
 @app.delete("/api/robots/{robot_id}")
-async def delete_robot(robot_id: str):
+def delete_robot(robot_id: str):
     """Delete a robot"""
-    result = await db.robots.delete_one({"_id": ObjectId(robot_id)})
+    result = db.robots.delete_one({"_id": ObjectId(robot_id)})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Robot not found")
     return {"message": "Robot deleted successfully"}
