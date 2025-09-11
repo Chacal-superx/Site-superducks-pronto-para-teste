@@ -104,8 +104,15 @@ class ConfigurationScript(BaseModel):
 def robot_dict(robot) -> dict:
     """Convert MongoDB document to dict"""
     if robot:
-        robot["id"] = str(robot["_id"])
-        del robot["_id"]
+        robot_copy = dict(robot)
+        robot_copy["id"] = str(robot_copy["_id"])
+        del robot_copy["_id"]
+        # Convert datetime objects to strings
+        if "created_at" in robot_copy and robot_copy["created_at"]:
+            robot_copy["created_at"] = robot_copy["created_at"].isoformat()
+        if "last_seen" in robot_copy and robot_copy["last_seen"]:
+            robot_copy["last_seen"] = robot_copy["last_seen"].isoformat()
+        return robot_copy
     return robot
 
 async def ping_robot(ip: str) -> bool:
