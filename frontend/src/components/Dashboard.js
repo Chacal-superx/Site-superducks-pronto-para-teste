@@ -563,7 +563,7 @@ const Dashboard = ({ user, token, onLogout }) => {
 
               {activeTab === 'chat' && (
                 <div className="h-96">
-                  <ChatSystem user={user} token={token} />
+                  <SimpleChatSystem user={user} token={token} />
                 </div>
               )}
             </CardContent>
