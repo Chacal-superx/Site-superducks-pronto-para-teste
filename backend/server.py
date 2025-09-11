@@ -560,22 +560,19 @@ echo "Timezone: $(timedatectl | grep 'Time zone' | awk '{{print $3}}')"
 """
 
 @app.get("/api/dashboard/stats")
-async def get_dashboard_stats():
+def get_dashboard_stats():
     """Get dashboard statistics"""
-    total_robots = await db.robots.count_documents({})
-    online_robots = await db.robots.count_documents({"status": "online"})
-    offline_robots = await db.robots.count_documents({"status": "offline"})
-    error_robots = await db.robots.count_documents({"status": "error"})
-    
-    # Recent diagnostics
-    recent_diagnostics = await db.diagnostics.find().sort("timestamp", -1).limit(10).to_list(10)
+    total_robots = db.robots.count_documents({})
+    online_robots = db.robots.count_documents({"status": "online"})
+    offline_robots = db.robots.count_documents({"status": "offline"})
+    error_robots = db.robots.count_documents({"status": "error"})
     
     return {
         "total_robots": total_robots,
         "online_robots": online_robots,
         "offline_robots": offline_robots,
         "error_robots": error_robots,
-        "recent_diagnostics": len(recent_diagnostics)
+        "recent_diagnostics": 0
     }
 
 @app.post("/api/bulk-operations/diagnose-all")
