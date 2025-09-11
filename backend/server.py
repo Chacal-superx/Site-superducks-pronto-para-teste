@@ -1161,6 +1161,9 @@ async def video_streaming(websocket: WebSocket, device_id: str):
 # Include the router in the main app
 app.include_router(api_router)
 
+# Include chat router
+app.include_router(chat_router, prefix="/api")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
